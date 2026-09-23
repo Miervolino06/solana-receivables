@@ -1,0 +1,107 @@
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletModal } from '@solana/wallet-adapter-react-ui';
+import { ArrowLeft, ArrowRight, ExternalLink, LoaderCircle, Wallet } from 'lucide-react';
+import Landing from './Landing';
+import { resolveSurface } from './navigation';
+import './entry.css';
+
+const Workspace = lazy(() => import('./App'));
+
+const copy = {
+  back: 'Back to the website', title: 'Your wallet. Your payment workspace.',
+  intro: 'Connect a Solana wallet to open the workspace and create your first test payment request.',
+  connect: 'Choose a wallet', selected: 'Connect', connecting: 'Waiting for your wallet…', change: 'Choose another wallet',
+  note: 'Connecting shares your public address with the app. It does not send SOL, sign a payment or approve spending.',
+  local: 'Requests stay in this browser, with no cross-device sync. Connecting another wallet does not hide records saved here.',
+  devnet: 'This version uses Solana Devnet: a test network with SOL that has no monetary value.',
+  step1: 'Choose your wallet', step2: 'Approve the connection in it', step3: 'Create and share a request',
+  help: 'No wallet appeared?', helpBody: 'Use a browser with a Solana wallet installed, or open this site in your mobile wallet’s browser. You can explore the product without installing anything.',
+  declined: 'The wallet did not connect. Unlock it and try again, or choose another wallet.',
+  loading: 'Opening your workspace…', faucet: 'Get test SOL', verify: 'Check a receipt without connecting',
+};
+
+function ConnectGate({ onHome }: { onHome: () => void }) {
+  const wallet = useWallet();
+  const { setVisible } = useWalletModal();
+  const [error, setError] = useState(false);
+  const text = copy;
+  async function connect() {
+    setError(false);
+    if (!wallet.wallet) { setVisible(true); return; }
+    try { await wallet.connect(); } catch { setError(true); }
+  }
+  useEffect(() => { setError(false); }, [wallet.wallet]);
+  return <div className="entry-page">
+    <header className="entry-header"><button className="entry-wordmark" onClick={onHome}>Receivables</button><span>Solana Devnet</span></header>
+    <main className="entry-main">
+      <button className="entry-back" onClick={onHome}><ArrowLeft size={17} /> {text.back}</button>
+      <div className="entry-layout">
+        <section className="entry-intro"><h1>{text.title}</h1><p>{text.intro}</p><ol><li>{text.step1}</li><li>{text.step2}</li><li>{text.step3}</li></ol><p className="entry-test-note">{text.devnet}</p></section>
+        <section className="entry-connection" aria-label={text.connect}>
+          <Wallet className="entry-wallet-icon" size={28} strokeWidth={1.5} />
+          <h2>{wallet.wallet ? wallet.wallet.adapter.name : text.connect}</h2>
+          <p>{text.note}</p>
+          <button className="entry-connect" onClick={() => void connect()} disabled={wallet.connecting}>
+            {wallet.connecting ? <><LoaderCircle size={18} className="entry-spinner" />{text.connecting}</> : <>{wallet.wallet ? text.selected + ' ' + wallet.wallet.adapter.name : text.connect}<ArrowRight size={18} /></>}
+          </button>
+          {wallet.wallet && <button className="entry-change" disabled={wallet.connecting} onClick={() => { setError(false); setVisible(true); }}>{text.change}</button>}
+          {error && <p className="entry-error" role="alert">{text.declined}</p>}
+          <details><summary>{text.help}</summary><p>{text.helpBody}</p></details>
+          <p className="entry-storage">{text.local}</p>
+          <a href="https://faucet.solana.com/" target="_blank" rel="noreferrer">{text.faucet}<ExternalLink size={14} /></a>
+        </section>
+      </div>
+      <a className="entry-verify" href="/verify">{text.verify}<ArrowRight size={16} /></a>
+    </main>
+  </div>;
+}
+
+export default function Root() {
+  const wallet = useWallet();
+  const [navigation, setNavigation] = useState(0);
+  // The workspace replaces the URL as a request becomes a receipt. Read that
+  // current URL on wallet changes too, so shared proofs remain public.
+  const current = new URL(location.href);
+  const surface = resolveSurface(current.pathname, current.search, wallet.connected && Boolean(wallet.publicKey));
+  const previousScreen = useRef({ surface, navigation });
+  useEffect(() => {
+    const previous = previousScreen.current;
+    previousScreen.current = { surface, navigation };
+    if (previous.surface === surface && previous.navigation === navigation) return;
+    // Lazy workspace content can arrive after the route has already changed.
+    const focusHeading = () => {
+      const heading = document.querySelector<HTMLElement>('main h1');
+      if (!heading) return false;
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+      return true;
+    };
+    const observer = new MutationObserver(() => { if (focusHeading()) observer.disconnect(); });
+    const frame = requestAnimationFrame(() => {
+      if (!focusHeading()) observer.observe(document.getElementById('root')!, { childList: true, subtree: true });
+    });
+    return () => { cancelAnimationFrame(frame); observer.disconnect(); };
+  }, [surface, navigation]);
+  useEffect(() => {
+    const update = () => setNavigation(value => value + 1);
+    window.addEventListener('popstate', update);
+    return () => window.removeEventListener('popstate', update);
+  }, []);
+  useEffect(() => {
+    document.documentElement.lang = 'en';
+    document.title = surface === 'connect' ? 'Receivables — ' + copy.connect
+      : surface === 'landing' ? 'Receivables — SOL payment links with verifiable receipts'
+      : 'Receivables — Requests and verified receipts';
+  }, [surface]);
+  function navigate(path: string) {
+    history.pushState(null, '', path);
+    setNavigation(value => value + 1);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+  if (surface === 'landing') return <Landing onEnter={() => navigate('/app')} connected={wallet.connected} />;
+  if (surface === 'connect') return <ConnectGate onHome={() => navigate('/')} />;
+  return <Suspense fallback={<div className="entry-loading" role="status"><LoaderCircle size={22} className="entry-spinner" />{copy.loading}</div>}>
+    <Workspace key={navigation} publicAccess={surface === 'public'} initialPage={current.pathname.startsWith('/verify') ? 'verify' : 'requests'} onHome={() => navigate('/')} onWorkspace={() => navigate('/app')} onVerify={() => navigate('/verify')} />
+  </Suspense>;
+}

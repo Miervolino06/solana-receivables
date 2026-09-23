@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+<title id="title">Receivables — Solana payment requests</title><desc id="desc">Review the request, sign in your wallet, verify the payment. Solana Devnet.</desc>
+<rect width="1200" height="630" fill="#f9f9f7"/>
+<g fill="#131313" font-family="Arial, sans-serif">
+<text x="72" y="91" font-size="26" font-weight="600">Receivables</text>
+<text x="1128" y="91" font-size="22" text-anchor="end" fill="#6b6965">Solana Devnet</text>
+<path d="M72 127H1128M72 440H1128" stroke="#deded9"/>
+<text x="72" y="270" font-size="76" font-weight="600" letter-spacing="-3">A request. A payment.</text>
+<text x="72" y="358" font-size="76" font-weight="600" letter-spacing="-3">Proof that they match.</text>
+<text x="72" y="512" font-size="24">Review every detail</text>
+<text x="471" y="512" font-size="24">Sign in your wallet</text>
+<text x="892" y="512" font-size="24">Verify onchain</text>
+<text x="72" y="581" font-size="19" fill="#6b6965">Test SOL only · No platform fee · No custody</text>
+</g></svg>

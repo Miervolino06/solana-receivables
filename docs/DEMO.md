@@ -1,24 +1,18 @@
-# Demo recording plan (maximum 3 minutes)
+# Three-minute demo script
 
-Record a real end-to-end transaction on Solana Devnet. Keep the wallet visible for the signature step and show the confirmed transaction afterward. Never show a seed phrase, private key, or unrelated wallet data. Do not substitute a mock receipt or pre-recorded success state.
+**Recording status: pending.** The first real wallet payment is confirmed and available at [the public receipt](https://solana-receivables.vercel.app/demo). The user did not record that signature. A new unpaid request is prepared at [the recording link](https://solana-receivables.vercel.app/record): 0.001 Devnet SOL to the same recipient. Start the phone's screen recording **before** opening Review payment, then let the user approve in Phantom. Do not represent a replayed receipt, illustration, offline fixture or fee quote as a newly signed payment.
 
-## Before recording
+Use the deployed app, a funded payer wallet and a recipient wallet you control. Keep the actual receipt URL and transaction signature. Never show a seed phrase or private key.
 
-1. Deploy the current build to its browser URL and open it in a clean browser session.
-2. Connect a standard wallet set to **Devnet** and confirm it has test SOL.
-3. Have the user choose a short statement they are comfortable publishing permanently. The statement must not contain private or identifying information.
-4. Confirm the signing review is displaying the exact memo, the one-unit token result, account rent, the transaction fee estimate, and the public-record warning.
-5. Verify that the app uses the Devnet endpoint. If using a custom RPC, disclose that endpoint in the README.
+For a quick phone recording, use a single continuous take under three minutes: open the recording link inside Phantom, explain the purpose, show the full review and total, approve the transfer, wait for its receipt, and open Explorer. Narration can be short: “Receivables turns a payment link into proof you can check. This is Devnet test SOL. Before signing, I can see the recipient, amount, fee and risks. After confirmation, anyone can verify the exact request against the transaction.” If a wallet security screen is omitted by the recorder, film the phone with another device so the actual approval is visible. Upload the real recording to YouTube, Loom, Vimeo or X and use that URL in the submission.
 
-## Suggested 2:30–2:50 run of show
+| Time | Show and say |
+| --- | --- |
+| 0:00–0:25 | Create a request for the recipient. “The link states exactly what is being requested; creating it does not sign or move funds.” |
+| 0:25–0:55 | Open the link as payer. Read the exact recipient, amount, estimated network fee and total aloud. Point out that request fields and the Memo are public, the transfer is irreversible, and failed transactions may still cost a fee. This is Devnet SOL with no monetary value. |
+| 0:55–1:25 | Choose the payer wallet, inspect the wallet’s transaction details and approve it. Show the wallet itself signing; do not imply the app signs for the payer. |
+| 1:25–1:55 | Wait for confirmed status. Open the receipt’s match sheet and show exact recipient, amount, request binding, signature and balance evidence. |
+| 1:55–2:25 | Open `/verify`, recheck the same real receipt, and download its JSON record. Change the request data while keeping the transaction signature and show that the altered request is rejected. |
+| 2:25–2:50 | Open the transaction in Solana Explorer on Devnet. Compare the signature and transfer independently. Close: “The receipt is useful because its request and transaction can be checked.” |
 
-- **0:00–0:20 — What it does:** “BEFORE creates a public, wallet-signed Devnet receipt for this statement. It creates a zero-decimal token with one unit, sends it to my wallet, revokes its mint authority, and puts a structured Memo with the statement in the same transaction. This is a timestamped record, not proof the prediction is true.”
-- **0:20–0:45 — Compose:** Choose the statement type and enter a short prediction or commitment. Show the interface and connected Devnet wallet.
-- **0:45–1:10 — Explain before signing:** Pause on the app's review screen. Point to the exact statement, what accounts/tokens will be created, one token received, estimated network fee, rent paid for new accounts, and warning that the memo is public and permanent. State that the app charges no fee.
-- **1:10–1:35 — Sign:** Click the sign action and show the wallet transaction. Review the actual transaction contents and approve it. Never imply wallet confirmation before approval.
-- **1:35–2:05 — Confirm:** Return to the app and wait for real Devnet confirmation. Show the resulting mint address, signature, and confirmation status.
-- **2:05–2:35 — Verify:** Open the signature on Solana Explorer with **Devnet** selected. Show the successful transaction, Memo instruction, mint/account instructions, token result, and signer. Explain that the receipt proves creation and recipient at that time, while later ownership can change. Call out that Devnet assets have no economic value.
-- **2:35–2:45 — Design line:** “The design choice I'm proudest of is putting the public statement and its costs on the review screen before the wallet opens.”
-
-If confirmation fails, show the failure honestly and do not present it as a successful demo. Record a new complete take after the cause is fixed. Keep the final uploaded video at or below three minutes.
-
+Before submission, test that the public receipt link opens without a wallet and that the altered request fails. The displayed Devnet identity or sample slot is network context only; it must not stand in for a signature or receipt. Keep the actual receipt URL in project evidence and upload the final video URL only after the real recording exists.

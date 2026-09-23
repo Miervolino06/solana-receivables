@@ -1,0 +1,122 @@
+/* The selector is portaled outside the workspace: give it its own graphite surface. */
+.receivables-wallet-modal {
+  background: transparent;
+  color-scheme: dark;
+  scrollbar-color: #505c6b #101317;
+}
+.receivables-wallet-modal .wallet-adapter-modal-overlay { background: rgb(0 0 0 / .64); }
+.receivables-wallet-modal .wallet-adapter-modal-container {
+  margin: 24px;
+  min-height: calc(100svh - 48px);
+}
+.receivables-wallet-modal .wallet-adapter-modal-wrapper {
+  max-width: 420px;
+  padding: 28px;
+  border-radius: 16px;
+  background: #181c21;
+  color: #eef0f3;
+  font-family: 'Manrope Variable', sans-serif;
+  box-shadow: 0 24px 72px rgb(0 0 0 / .4);
+}
+.receivables-wallet-modal .wallet-adapter-modal-title {
+  align-self: stretch;
+  padding: 0 46px 0 0;
+  margin: 2px 0 28px;
+  text-align: left;
+  color: #eef0f3;
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -.025em;
+  text-wrap: balance;
+}
+.receivables-wallet-modal .wallet-adapter-modal-button-close {
+  top: 18px;
+  right: 18px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 10px;
+  background: transparent;
+  transition: background .15s ease;
+}
+.receivables-wallet-modal .wallet-adapter-modal-button-close svg { fill: #b4bfcc; }
+.receivables-wallet-modal .wallet-adapter-modal-button-close:hover { background: #2b333e; }
+.receivables-wallet-modal .wallet-adapter-modal-button-close:hover svg { fill: #eef0f3; }
+.receivables-wallet-modal .wallet-adapter-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+.receivables-wallet-modal .wallet-adapter-modal-list li { margin: 0; min-width: 0; }
+.receivables-wallet-modal .wallet-adapter-collapse > li + li { margin-top: 10px; }
+.receivables-wallet-modal .wallet-adapter-button {
+  width: 100%;
+  max-width: none;
+  height: auto;
+  min-height: 64px;
+  padding: 14px 16px;
+  border: 1px solid #303741;
+  border-radius: 12px;
+  background: #20262d;
+  color: #eef0f3;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.4;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  transition: background .15s ease, border-color .15s ease;
+}
+.receivables-wallet-modal .wallet-adapter-button:not(:disabled):hover {
+  background: #2b333e;
+  border-color: #505c6b;
+}
+.receivables-wallet-modal .wallet-adapter-button:not(:disabled):active { background: #35404c; }
+.receivables-wallet-modal .wallet-adapter-button-start-icon {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  margin-right: 12px;
+}
+.receivables-wallet-modal .wallet-adapter-button-start-icon img {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+.receivables-wallet-modal .wallet-adapter-button > span {
+  margin-left: auto;
+  padding-left: 12px;
+  color: #b4bfcc;
+  opacity: 1;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.receivables-wallet-modal .wallet-adapter-modal-list-more {
+  min-height: 44px;
+  margin-top: 10px;
+  padding: 8px 0;
+  color: #93b1ff;
+  font-family: inherit;
+  font-size: 13px;
+}
+.receivables-wallet-modal .wallet-adapter-modal-list-more svg { fill: currentColor; }
+.receivables-wallet-modal .wallet-adapter-modal-middle { padding: 0; }
+.receivables-wallet-modal button:focus-visible { outline: 2px solid #93b1ff; outline-offset: 3px; }
+@media (max-width: 480px) {
+  .receivables-wallet-modal .wallet-adapter-modal-container { margin: 16px; min-height: calc(100svh - 32px); }
+  .receivables-wallet-modal .wallet-adapter-modal-wrapper { padding: 24px 20px; }
+  .receivables-wallet-modal .wallet-adapter-modal-title { font-size: 21px; margin-bottom: 24px; }
+  .receivables-wallet-modal .wallet-adapter-modal-button-close { top: 14px; right: 12px; }
+  .receivables-wallet-modal .wallet-adapter-button { padding: 12px; font-size: 14px; }
+  .receivables-wallet-modal .wallet-adapter-button > span { font-size: 11px; padding-left: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .receivables-wallet-modal, .receivables-wallet-modal button, .receivables-wallet-modal svg { transition: none; }
+}
