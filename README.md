@@ -74,6 +74,8 @@ CSV includes request details, status, check time, available transaction/fee/conf
 
 ## Limits
 
+Security controls, private vulnerability reporting, deployment configuration and trust boundaries are documented in [SECURITY.md](SECURITY.md).
+
 All request fields are public in the link and paid Memo. The payee label is self-declared; payment proves a transfer, not identity or delivery. This is not a fiscal invoice. Request creation time is not chain confirmation time.
 
 Devnet SOL has no economic value and Devnet can reset. Native transfers are irreversible; failed on-chain transactions may incur fees. Duplicate checks and persistent pending hints reduce accidental retries, but concurrent payments across devices can still both succeed.

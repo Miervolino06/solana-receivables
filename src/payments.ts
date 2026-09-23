@@ -42,6 +42,7 @@ const inFlightReferences = new Set<string>();
 // Session-only safety net. The UI also saves pending signatures across reloads.
 const submittedSignatures = new Map<string, string>();
 class PaymentMismatchError extends Error {}
+export class PaymentHistoryLimitError extends Error {}
 
 export class PendingPaymentError extends Error {
   constructor(message: string, public readonly signature: string) { super(message); this.name = 'PendingPaymentError'; }
@@ -313,8 +314,10 @@ export async function fetchPaymentReceipt(signature: string, request: PaymentReq
   if (!response) throw new PendingPaymentError('Transaction is not yet available. Check this signature before retrying.', signature);
   return verifyPaymentTransaction(signature, valid, response);
 }
-export async function findPayment(request: PaymentRequest, rpc: Connection = connection): Promise<PaymentReceipt | null> {
+export async function findPayment(request: PaymentRequest, rpc: Connection = connection, options: { maxSignatures?: number } = {}): Promise<PaymentReceipt | null> {
   const valid = validateRequest(request); await assertDevnet(rpc);
+  const maxSignatures = options.maxSignatures ?? 50;
+  if (!Number.isSafeInteger(maxSignatures) || maxSignatures < 1 || maxSignatures > 50) throw new Error('Invalid payment history limit.');
   const submittedSignature = submittedSignatures.get(valid.reference);
   if (submittedSignature) {
     try { return await fetchPaymentReceipt(submittedSignature, valid, rpc); }
@@ -323,7 +326,7 @@ export async function findPayment(request: PaymentRequest, rpc: Connection = con
       submittedSignatures.delete(valid.reference);
     }
   }
-  const entries = await rpc.getSignaturesForAddress(new PublicKey(valid.reference), { limit: 50 }, 'confirmed');
+  const entries = await rpc.getSignaturesForAddress(new PublicKey(valid.reference), { limit: maxSignatures }, 'confirmed');
   let pending: string | null = null;
   for (const entry of entries) {
     if (entry.err) continue;
@@ -337,14 +340,14 @@ export async function findPayment(request: PaymentRequest, rpc: Connection = con
     }
   }
   if (pending) throw new PendingPaymentError('A transaction using this reference is still pending. Check its signature before paying again.', pending);
-  if (entries.length === 50) throw new Error('This reference has more history than can be verified safely. Use a fresh request or inspect it in Explorer.');
+  if (entries.length === maxSignatures) throw new PaymentHistoryLimitError('This reference has more history than can be verified safely. Use a fresh request or inspect it in Explorer.');
   return null;
 }
-export async function preparePayment(request: PaymentRequest, payer: PublicKey, rpc: Connection = connection): Promise<PreparedPayment> {
+export async function preparePayment(request: PaymentRequest, payer: PublicKey, rpc: Connection = connection, options: { maxSignatures?: number } = {}): Promise<PreparedPayment> {
   const valid = validateRequest(request);
   if (payer.toBase58() === valid.recipient) throw new Error('You cannot pay your own wallet.');
   await assertDevnet(rpc);
-  if (await findPayment(valid, rpc)) throw new Error('This request already has a verified payment. Check its receipt before paying again.');
+  if (await findPayment(valid, rpc, options)) throw new Error('This request already has a verified payment. Check its receipt before paying again.');
   const [recipientAccount, balance, latest] = await Promise.all([
     rpc.getAccountInfo(new PublicKey(valid.recipient), 'confirmed'),
     rpc.getBalance(payer, 'confirmed'), rpc.getLatestBlockhash('confirmed'),
