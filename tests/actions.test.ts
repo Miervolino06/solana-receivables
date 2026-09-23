@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ComputeBudgetInstruction, ComputeBudgetProgram, Connection, Keypair, Transaction } from '@solana/web3.js';
 import { Buffer } from 'buffer';
+import bs58 from 'bs58';
 import { createRequest, encodeRequest } from '../src/payments';
 import { ACTION_HEADERS, createActionHandler, disclosure } from '../api/pay';
 
@@ -32,6 +33,96 @@ describe('Solana Action surface', () => {
     await createActionHandler(rpc as unknown as Connection)({ method: 'POST', url: '/api/pay?r=garbage', body: { account: Keypair.generate().publicKey.toBase58() } }, res);
     expect(state.status).toBe(400);
     expect(rpc.getGenesisHash).not.toHaveBeenCalled();
+  });
+
+  it('rejects malformed POST bodies before any RPC call', async () => {
+    const request = createRequest({ recipient: Keypair.generate().publicKey.toBase58(), amount: '0.01', label: 'Example', description: '' });
+    const rpc = { getGenesisHash: vi.fn() };
+    const handler = createActionHandler(rpc as unknown as Connection);
+    const url = `/api/pay?r=${encodeRequest(request)}`;
+    for (const body of [undefined, {}, { account: Keypair.generate().publicKey.toBase58(), extra: true },
+      { account: Keypair.generate().publicKey.toBase58(), data: { unexpected: 'value' } }, 'x'.repeat(513)]) {
+      const result = response();
+      await handler({ method: 'POST', url, body }, result.res);
+      expect(result.state.status).toBe(400);
+    }
+    expect(rpc.getGenesisHash).not.toHaveBeenCalled();
+  });
+
+  it('caps history work and fails closed for a busy reference', async () => {
+    const request = createRequest({ recipient: Keypair.generate().publicKey.toBase58(), amount: '0.01', label: 'Example', description: '' });
+    const rpc = {
+      getGenesisHash: vi.fn().mockResolvedValue('EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG'),
+      getSignaturesForAddress: vi.fn().mockImplementation(async (_reference, options) =>
+        Array.from({ length: options.limit }, (_, index) => ({ signature: bs58.encode(new Uint8Array(64).fill(index + 1)), err: null }))),
+      getTransaction: vi.fn().mockResolvedValue({ meta: { err: 'failed' } }),
+    };
+    const result = response();
+    await createActionHandler(rpc as unknown as Connection)({ method: 'GET', url: `/api/pay?r=${encodeRequest(request)}` }, result.res);
+    expect(result.state.status).toBe(409);
+    expect(rpc.getSignaturesForAddress).toHaveBeenCalledWith(expect.anything(), { limit: 10 }, 'confirmed');
+    expect(rpc.getTransaction).toHaveBeenCalledTimes(10);
+    expect(JSON.stringify(result.state.body)).not.toContain('transaction');
+  });
+
+  it('limits each instance and does not reflect arbitrary RPC errors', async () => {
+    const request = createRequest({ recipient: Keypair.generate().publicKey.toBase58(), amount: '0.01', label: 'Example', description: '' });
+    const url = `/api/pay?r=${encodeRequest(request)}`;
+    const rpc = { getGenesisHash: vi.fn().mockRejectedValue(new Error('provider response: private-marker')) };
+    const handler = createActionHandler(rpc as unknown as Connection);
+    for (let index = 0; index < 30; index++) {
+      const result = response();
+      await handler({ method: 'GET', url }, result.res);
+      expect(result.state.status).toBe(502);
+      expect(JSON.stringify(result.state.body)).not.toContain('private-marker');
+    }
+    const limited = response();
+    await handler({ method: 'GET', url }, limited.res);
+    expect(limited.state.status).toBe(429);
+    expect(limited.state.headers['Retry-After']).toBe('60');
+    expect(rpc.getGenesisHash).toHaveBeenCalledTimes(30);
+  });
+
+  it('rejects excess concurrent reviews on one instance', async () => {
+    const request = createRequest({ recipient: Keypair.generate().publicKey.toBase58(), amount: '0.01', label: 'Example', description: '' });
+    const url = `/api/pay?r=${encodeRequest(request)}`;
+    let release!: (value: string) => void;
+    const pending = new Promise<string>(resolve => { release = resolve; });
+    const rpc = { getGenesisHash: vi.fn().mockReturnValue(pending) };
+    const handler = createActionHandler(rpc as unknown as Connection);
+    const responses = Array.from({ length: 4 }, () => response());
+    const work = responses.map(result => handler({ method: 'GET', url }, result.res));
+    const limited = response();
+    await handler({ method: 'GET', url }, limited.res);
+    expect(limited.state.status).toBe(503);
+    expect(rpc.getGenesisHash).toHaveBeenCalledTimes(4);
+    release('wrong-network');
+    await Promise.all(work);
+  });
+
+  it('aborts a stalled default RPC instead of leaving network work running', async () => {
+    vi.useFakeTimers();
+    let observedSignal: AbortSignal | undefined;
+    const fetchMock = vi.fn((_input: unknown, init?: RequestInit) => new Promise<Response>((_resolve, reject) => {
+      observedSignal = init?.signal ?? undefined;
+      observedSignal?.addEventListener('abort', () => reject(new Error('upstream timeout detail')), { once: true });
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const request = createRequest({ recipient: Keypair.generate().publicKey.toBase58(), amount: '0.01', label: 'Example', description: '' });
+      const result = response();
+      const pending = createActionHandler()({ method: 'GET', url: `/api/pay?r=${encodeRequest(request)}` }, result.res);
+      await vi.advanceTimersByTimeAsync(15_000);
+      await pending;
+      expect(result.state.status).toBe(504);
+      expect(observedSignal?.aborted).toBe(true);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(JSON.stringify(result.state.body)).not.toContain('upstream timeout detail');
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.unstubAllGlobals();
+      vi.useRealTimers();
+    }
   });
 
   it('refuses a mainnet provider even with a valid request', async () => {
@@ -71,7 +162,7 @@ describe('Solana Action surface', () => {
     expect(get.state.status).toBe(200);
     expect(get.state.body).toMatchObject({ type: 'action', icon: 'https://example.com/action-icon.svg', disabled: false });
     expect((get.state.body as {description: string}).description).toContain('total: 0.010005 SOL');
-    const post = response(); await handler({ method: 'POST', url, body: { account: payer.toBase58() } }, post.res);
+    const post = response(); await handler({ method: 'POST', url, body: { account: payer.toBase58(), data: {} } }, post.res);
     expect(post.state.status).toBe(200);
     const body = post.state.body as { transaction: string; message: string };
     const transaction = Transaction.from(Buffer.from(body.transaction, 'base64'));
