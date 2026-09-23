@@ -2,6 +2,10 @@
 
 Snapshot: Receivables, 23/09/2026. No real payment is claimed yet.
 
+## Wallet selector refinement — 23/09/2026
+
+Removed workspace button-style leakage into the portaled wallet selector, including the 145px mobile width cap. The selector has graphite rows, internal gutters, consistent provider icons and readable detection labels. Browser checks used detected Phantom and MetaMask at desktop and 390px: both rows fit without text overflow. Opening from the connection gate and the public Verify header focuses the labeled close button; Tab cycles within the selector and Escape returns focus to the actual opener. No wallet connection or transaction was approved during these checks.
+
 ## English-only update — 23/09/2026
 
 The public website, wallet entry, loading/accessibility text, page metadata and user guide now use English only. The language selector and saved language preference logic were removed; dark appearance and the payment flow are preserved. Production build/TypeScript checks passed, and the English landing and wallet entry were inspected in browser. The earlier bilingual verification below is retained as release history.

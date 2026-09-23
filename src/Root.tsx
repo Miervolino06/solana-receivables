@@ -23,9 +23,7 @@ const copy = {
 
 function ConnectGate({ onHome }: { onHome: () => void }) {
   const wallet = useWallet();
-  const { visible, setVisible } = useWalletModal();
-  const connectButton = useRef<HTMLButtonElement>(null);
-  const modalWasOpen = useRef(false);
+  const { setVisible } = useWalletModal();
   const [error, setError] = useState(false);
   const text = copy;
   async function connect() {
@@ -34,23 +32,6 @@ function ConnectGate({ onHome }: { onHome: () => void }) {
     try { await wallet.connect(); } catch { setError(true); }
   }
   useEffect(() => { setError(false); }, [wallet.wallet]);
-  useEffect(() => {
-    if (!visible) {
-      if (modalWasOpen.current) connectButton.current?.focus();
-      modalWasOpen.current = false;
-      return;
-    }
-    modalWasOpen.current = true;
-    // The upstream selector traps Tab but does not move focus into its portal.
-    const frame = requestAnimationFrame(() => {
-      const close = document.querySelector<HTMLButtonElement>('.wallet-adapter-modal-button-close');
-      close?.setAttribute('aria-label', 'Close wallet selection');
-      const title = document.querySelector('.wallet-adapter-modal-title');
-      if (title) title.id = 'wallet-adapter-modal-title';
-      close?.focus();
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [visible]);
   return <div className="entry-page">
     <header className="entry-header"><button className="entry-wordmark" onClick={onHome}>Receivables</button><span>Solana Devnet</span></header>
     <main className="entry-main">
@@ -61,7 +42,7 @@ function ConnectGate({ onHome }: { onHome: () => void }) {
           <Wallet className="entry-wallet-icon" size={28} strokeWidth={1.5} />
           <h2>{wallet.wallet ? wallet.wallet.adapter.name : text.connect}</h2>
           <p>{text.note}</p>
-          <button ref={connectButton} className="entry-connect" onClick={() => void connect()} disabled={wallet.connecting}>
+          <button className="entry-connect" onClick={() => void connect()} disabled={wallet.connecting}>
             {wallet.connecting ? <><LoaderCircle size={18} className="entry-spinner" />{text.connecting}</> : <>{wallet.wallet ? text.selected + ' ' + wallet.wallet.adapter.name : text.connect}<ArrowRight size={18} /></>}
           </button>
           {wallet.wallet && <button className="entry-change" disabled={wallet.connecting} onClick={() => { setError(false); setVisible(true); }}>{text.change}</button>}

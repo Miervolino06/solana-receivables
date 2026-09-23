@@ -7,4 +7,5 @@ import '@solana/wallet-adapter-react-ui/styles.css';
 import { Wallets } from './wallet';
 import Root from './Root';
 import './styles.css';
+import './wallet-modal.css';
 createRoot(document.getElementById('root')!).render(<StrictMode><Wallets><Root /></Wallets></StrictMode>);

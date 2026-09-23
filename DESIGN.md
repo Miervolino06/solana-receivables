@@ -120,6 +120,8 @@ The original cool-white, pale blue-gray and ink tokens remain the optional saved
 
 ## Layout
 
+The shared wallet selector uses a 420px graphite dialog with 28px internal gutters (20px on mobile), 64px neutral wallet rows and 10px separation. Provider icons retain their identity; sapphire is reserved for focus. Wallet launch-button styles are scoped to the workspace and never affect the portaled selector. Initial focus, an accessible close label and focus return apply from every entry point.
+
 At desktop widths, the workspace uses a 184px rail beside a floating main panel with 10px outer breathing room. The public landing uses a wide two-column hero, with copy and entry actions alongside the interactive paper-stack illustration, then explains the workflow, audience, limits and FAQs. The header is compact, and the main content uses a compact 24px page gutter. Requests use a searchable, filterable table with a contextual detail panel; payment review is a focused overlay. The typical request row is 70px high, with 57px detail headers and compact controls.
 
 Workspace breakpoints adapt the list/detail view and navigation for narrow screens. The landing shifts from a two-column hero to a single-column composition below 850px, then tightens spacing and type at 640px and 370px. These are implementation breakpoints, not a claim of independent device QA.
