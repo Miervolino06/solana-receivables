@@ -5,7 +5,7 @@ Product: **Receivables**. Network: **Solana Devnet**. Package: `solana-receivabl
 Deadline recorded from the [official event page](https://www.hackalaunch.com/h/proof-of-taste): **23/09/2026, 21:28 America/Sao_Paulo**, or 24/09/2026 00:28 UTC.
 
 - Repository: https://github.com/Miervolino06/solana-receivables
-- FALTA: verified public production URL.
+- Public production: https://solana-receivables.vercel.app/
 - FALTA: real-wallet payment signature and public verified receipt.
 - FALTA: uploaded demo video, at most three minutes.
 
@@ -31,11 +31,12 @@ BEFORE application/wallet scaffolding was reused. The user chronology places thi
 
 ## Final checks
 
-- [ ] Public repo includes setup, program IDs, dependencies and public-only environment example.
-- [ ] Production link works with a standard Solana wallet.
+- [x] Public repo includes setup, program IDs, dependencies and public-only environment example.
+- [x] Production frontend and Action endpoint are publicly reachable and tested.
+- [ ] End-to-end production payment with a standard Solana wallet.
 - [ ] Real Devnet transfer, signature and verified receipt inspected.
 - [ ] Video <=3 minutes shows request, pre-sign disclosure, wallet approval and confirmation.
-- [ ] Description, design sentence and provenance included.
+- [x] Description, design sentence and provenance included.
 - [ ] Team size <=4, one submission per person and actual submission confirmed.
 
 Eligibility in principle does not imply organizer approval. See [VERIFICATION.md](VERIFICATION.md).

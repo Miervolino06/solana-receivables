@@ -4,7 +4,7 @@ Snapshot: Receivables, 23/09/2026. No real payment is claimed yet.
 
 ## Automated evidence
 
-- Production build and TypeScript check passed at 01:04 BRT.
+- Production build and TypeScript check passed locally and in GitHub CI; latest code commit tested: `46403d3`.
 - 25 tests passed in 3 files, Vitest 4.1.11: exact transfer/Memo proofs, tampering, duplicate/expiry/pending guards, synchronous persistence before broadcast, Action metadata/unsigned transaction/CORS and workspace/CSV integer accounting.
 - These tests use explicit offline fixtures; fixtures never enter the user interface or establish real onchain evidence.
 - Dependency audit: 4 moderate transitive findings in web3.js/jayson/uuid/stream-json; no high or critical findings. No forced downgrade applied.
@@ -27,10 +27,12 @@ Independent source review found and confirmed fixes for stale selection receipt 
 
 ## Required evidence still pending
 
-- [ ] Verify public deployment, live Action GET/POST/OPTIONS, icon/origin and actions.json.
+- [x] Public deployment is Vercel READY on `46403d3`: https://solana-receivables.vercel.app/.
+- [x] Anonymous frontend HTTP 200; live Action smoke at 23/09/2026 01:20 BRT: OPTIONS 204, GET 200 with real Devnet fee quote, invalid-payer POST 400, icon 200, actions.json 200 and correct mapping. No transaction was submitted by the smoke script.
+- [x] GitHub CI passed on Linux / Node 22, including the server dependency import guard, 25 tests and production build. [Run](https://github.com/Miervolino06/solana-receivables/actions/runs/35817868974).
 - [ ] Complete one real standard-wallet payment; preserve its signature and verified receipt.
 - [ ] Record and upload the required video of at most 3 minutes, including review, wallet signing and confirmation.
 
-Public source: https://github.com/Miervolino06/solana-receivables. The supplied payer wallet had zero Devnet SOL; the official RPC faucet returned 429. The user has been asked to use the official web faucet.
+Public source: https://github.com/Miervolino06/solana-receivables. The supplied payer wallet still had zero Devnet SOL at 01:19 BRT; the official RPC faucet returned 429 earlier. The user has been asked to use the official web faucet. A successful funded unsigned POST is covered by an explicit test fixture, not yet by a funded live wallet in production.
 
 Local signatures are hints, never proof. RPC errors remain unknown, never paid or unpaid. Cross-device/native transfers cannot guarantee exactly-once settlement. External Blink registry approval and automatic social rendering remain unverified.

@@ -1,6 +1,6 @@
 # Receivables surface
 
-The approved reference is the current Órbita CRM in the user's own fdz-crm, origin/master `3fdef60`: Manrope with Geist Mono; light surfaces `#f5f6f8`, `#ffffff`, `#f0f2f5`; sapphire `#345ed3` primary; a 184px rail; floating main panel with 18px radius; 12/7/16px component radii and compact 63/72px rows. The earlier warm-neutral/Geist interpretation came from a stale checkout and is superseded. The UI is being updated to this current reference. This is a visual reference; no CRM source, assets or data were copied. Receivables is a neutral working name. The earlier LINEITEM icon and document-led direction were rejected.
+The approved reference is the current Órbita CRM in the user's own fdz-crm, origin/master `3fdef60`: Manrope with Geist Mono; light surfaces `#f5f6f8`, `#ffffff`, `#f0f2f5`; sapphire `#345ed3` primary; a 184px rail; floating main panel with 18px radius; 12/7/16px component radii and compact request rows. This direction is implemented in the current interface. The earlier warm-neutral/Geist interpretation came from a stale checkout and is superseded. This is a visual reference; no CRM source, assets or data were copied. Receivables is a neutral working name. The earlier LINEITEM icon and document-led direction were rejected.
 
 ## Information hierarchy
 
@@ -19,3 +19,7 @@ The user can share a receipt, inspect it without connecting a wallet, print/save
 Draft/shared → review → signing → pending → verified or visible failure. Pending signatures survive reload when local storage succeeds, but another device can still make a duplicate payment. Workspace is browser-only and capped at 40 requests.
 
 Keep reduced motion, keyboard navigation and focus legible. No fake activity, invented paid examples, decorative tokens or implied external Blink verification. Final visual and browser evidence is tracked in VERIFICATION.md.
+
+## Production status
+
+The production app is live at https://solana-receivables.vercel.app. The 23/09/2026 01:20 BRT smoke passed for Action OPTIONS/GET, invalid-payer POST handling, icon and actions.json. The GET fee quote was 0.000005 SOL for a 0.001 SOL request (0.001005 SOL total). No funded production POST or real signed payment has been verified; the interface must continue to distinguish code paths and test fixtures from actual chain evidence.

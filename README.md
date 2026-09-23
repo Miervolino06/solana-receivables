@@ -2,6 +2,8 @@
 
 SOL payment links, a local request workspace, and receipts verified against the exact on-chain payment. Create a request without signing, share its link or QR, then reconcile requests against Solana Devnet and export the results.
 
+[Open Receivables](https://solana-receivables.vercel.app/) · [Submission notes](docs/SUBMISSION.md)
+
 ## Run
 
 Node.js 22 and npm:
@@ -10,6 +12,7 @@ Node.js 22 and npm:
 npm ci
 npm run dev
 npm test
+npm run check:server-deps
 npm run build
 npm run preview
 ```
@@ -55,6 +58,6 @@ Devnet SOL has no economic value and Devnet can reset. Native transfers are irre
 
 The earlier BEFORE prototype is separate. Its application/wallet scaffolding was reused during this hackathon according to the user chronology; payment, reconciliation and Actions work belongs to this pivot. The UI follows the user's own Órbita CRM (fdz-crm, origin/master `3fdef60`) as a visual reference: Manrope, Geist Mono, light surfaces and sapphire accents. No CRM source, assets or business data were copied. No organizer opening date is invented.
 
-Source: [GitHub](https://github.com/Miervolino06/solana-receivables). FALTA: verified production deployment, real-wallet payment evidence and demo video. Track these in [VERIFICATION.md](docs/VERIFICATION.md) and [SUBMISSION.md](docs/SUBMISSION.md).
+Source: [GitHub](https://github.com/Miervolino06/solana-receivables). Production and live read-only Action smoke checks passed on 23/09/2026. FALTA: real-wallet payment evidence and demo video. Track these in [VERIFICATION.md](docs/VERIFICATION.md) and [SUBMISSION.md](docs/SUBMISSION.md).
 
 Code retains its MIT license. The UI fonts, Manrope and Geist Mono, use OFL-1.1. React is MIT and Lucide is ISC. Retain upstream notices.
