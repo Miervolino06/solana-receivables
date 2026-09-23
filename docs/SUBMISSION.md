@@ -9,8 +9,11 @@ Deadline shown on the [official event page](https://www.hackalaunch.com/h/proof-
 - Public Proof desk: https://solana-receivables.vercel.app/verify
 - Verified Devnet demonstration receipt: https://solana-receivables.vercel.app/demo
 - Public evidence JSON: https://solana-receivables.vercel.app/receipt-demo-v1.json
+- Demo video: https://x.com/NoMotionKol/status/2102829978316657060
+- Hackalaunch public submissions: https://hackalaunch.com/h/proof-of-taste#submissions
+- Submitted payout address: `GcMnAoMVpzoQM8fD87AYgduWEBuMn4XfekuAUmW852a2`
 - Evidence instructions: [docs/PROOF.md](PROOF.md)
-- **Still pending:** a hosted demo video that includes wallet approval footage, and the actual Hackalaunch submission. The approved 92.76-second silent product tour is recorded, but it does not show wallet approval; no hosted video URL is available yet.
+- **Status — 23 September 2026:** the 92.76-second silent product-tour video is published on X, and the submission appears on the public Hackalaunch submissions page as “Receivables — SOL payments with proof” by @NoMotionKol. The video does not show wallet approval, so the full video criterion is not met. No unique entry URL is visible; the public submissions page is the available listing link. Public listing does not confirm organizer eligibility, team-rule compliance, or an award.
 
 ## Short description
 
@@ -32,8 +35,9 @@ BEFORE application/wallet scaffolding was reused. The user chronology places thi
 - [x] Production frontend and Action endpoint were publicly reachable and smoke-checked; those checks submitted no payment.
 - [x] Automated offline fixtures cover transaction-match and tampering rules; fixtures are not chain proof.
 - [x] The user reports approving a Phantom payment; read-only Devnet verification matched the exact 0.001 SOL request, 0.000005 SOL fee and payer signature `KQvP2y2F1RhyzhaU4YNNdhGkpixAUr42KTgWniqnRpnDvbcjYCci6yM4sVJH3GXrbXT1iPpz4qMTzx5iVTJFxwC` in slot 503047831. The public report includes the receipt URL and Explorer link.
-- [x] An approved 92.76-second silent product-tour video is recorded.
-- [ ] Hosted video includes wallet approval footage and is no longer than three minutes. The current video does not show wallet approval; no public video URL is available yet.
-- [ ] Team size, one-submission-per-person rule and actual submission confirmed.
+- [x] An approved 92.76-second silent product-tour video is published at the X link above.
+- [ ] Video shows wallet approval. The published video does not include that footage.
+- [x] Hackalaunch submission appears on the public submissions page linked above.
+- [ ] Team size and one-submission-per-person rule confirmed; organizer eligibility decision is not known.
 
 The public BEFORE prototype is historical; its URLs are not Receivables deployment evidence. Eligibility in principle does not imply organizer approval. See [VERIFICATION.md](VERIFICATION.md) for the dated evidence record and [DEMO.md](DEMO.md) for the recording script.
