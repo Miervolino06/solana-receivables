@@ -10,7 +10,7 @@ Deadline shown on the [official event page](https://www.hackalaunch.com/h/proof-
 - Verified Devnet demonstration receipt: https://solana-receivables.vercel.app/demo
 - Public evidence JSON: https://solana-receivables.vercel.app/receipt-demo-v1.json
 - Evidence instructions: [docs/PROOF.md](PROOF.md)
-- **Still pending:** a demo video no longer than three minutes and the actual Hackalaunch submission.
+- **Still pending:** a hosted demo video that includes wallet approval footage, and the actual Hackalaunch submission. The approved 92.76-second silent product tour is recorded, but it does not show wallet approval; no hosted video URL is available yet.
 
 ## Short description
 
@@ -32,7 +32,8 @@ BEFORE application/wallet scaffolding was reused. The user chronology places thi
 - [x] Production frontend and Action endpoint were publicly reachable and smoke-checked; those checks submitted no payment.
 - [x] Automated offline fixtures cover transaction-match and tampering rules; fixtures are not chain proof.
 - [x] The user reports approving a Phantom payment; read-only Devnet verification matched the exact 0.001 SOL request, 0.000005 SOL fee and payer signature `KQvP2y2F1RhyzhaU4YNNdhGkpixAUr42KTgWniqnRpnDvbcjYCci6yM4sVJH3GXrbXT1iPpz4qMTzx5iVTJFxwC` in slot 503047831. The public report includes the receipt URL and Explorer link.
-- [ ] Demo video of at most three minutes shows request, cost review, wallet approval, confirmation, proof and independent Explorer check.
+- [x] An approved 92.76-second silent product-tour video is recorded.
+- [ ] Hosted video includes wallet approval footage and is no longer than three minutes. The current video does not show wallet approval; no public video URL is available yet.
 - [ ] Team size, one-submission-per-person rule and actual submission confirmed.
 
 The public BEFORE prototype is historical; its URLs are not Receivables deployment evidence. Eligibility in principle does not imply organizer approval. See [VERIFICATION.md](VERIFICATION.md) for the dated evidence record and [DEMO.md](DEMO.md) for the recording script.

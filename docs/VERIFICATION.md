@@ -1,12 +1,12 @@
 # Verification status
 
-Current snapshot: 23/09/2026. One user-reported Phantom payment has an independently verified Devnet receipt. The video and Hackalaunch submission are pending. Sections below this current update retain what was known at earlier checks on the same date.
+Current snapshot: 23/09/2026. One user-reported Phantom payment has an independently verified Devnet receipt. An approved 92.76-second silent product-tour video has been recorded, but it does not show wallet approval; no hosted video URL or Hackalaunch submission is confirmed. Sections below this current update retain what was known at earlier checks on the same date.
 
 ## Verified demonstration payment — 23/09/2026
 
 The user reports approving the demonstration payment in Phantom. A read-only Devnet lookup at 17:11:52 UTC independently verified signature `KQvP2y2F1RhyzhaU4YNNdhGkpixAUr42KTgWniqnRpnDvbcjYCci6yM4sVJH3GXrbXT1iPpz4qMTzx5iVTJFxwC`, confirmed in slot 503047831 at 17:10:35 UTC. The exact request matched a 1,000,000-lamport transfer from `8PQiZb87dzMynLPM3K4Ph6bVNDoFTfyg34rMsEjAHCeb` to `2Ga88akVcu85SpbRxCHQkdQyU1jbvve6cMaYWyW1YDh1`, with a 5,000-lamport network fee. A changed-amount request was rejected against the same signature.
 
-The [public evidence JSON](../public/receipt-demo-v1.json) includes the request, check time, receipt URL and Explorer link; the short [demo receipt link](https://solana-receivables.vercel.app/demo) is for fresh verification. This is a Devnet test transfer and a timestamped RPC observation, not a portable certificate, customer adoption, proof of identity/delivery or Mainnet payment. The user has not recorded the required video, and no Hackalaunch submission is confirmed.
+The [public evidence JSON](../public/receipt-demo-v1.json) includes the request, check time, receipt URL and Explorer link; the short [demo receipt link](https://solana-receivables.vercel.app/demo) is for fresh verification. This is a Devnet test transfer and a timestamped RPC observation, not a portable certificate, customer adoption, proof of identity/delivery or Mainnet payment. The recorded video does not show wallet approval, no hosted video URL is available yet, and no Hackalaunch submission is confirmed.
 
 ## Phantom priority-fee compatibility — 23/09/2026
 
@@ -81,7 +81,7 @@ Checked in the Codex browser at desktop 1440px, tablet 900px and mobile 390px:
 
 Independent source review found and confirmed fixes for stale selection receipt association, a covered wallet button, Activity creation and panel focus. A separate substitute visual finish reviewer cleared the observed light desktop/tablet/mobile surfaces for shipping; real signing and paid receipt states remain outside that visual review.
 
-## Required evidence still pending
+## Earlier release checkpoint — 23/09/2026 01:20 BRT
 
 - [x] Public deployment is Vercel READY on `46403d3`: https://solana-receivables.vercel.app/.
 - [x] Anonymous frontend HTTP 200; live Action smoke at 23/09/2026 01:20 BRT: OPTIONS 204, GET 200 with real Devnet fee quote, invalid-payer POST 400, icon 200, actions.json 200 and correct mapping. No transaction was submitted by the smoke script.
