@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { Connection, Keypair, Transaction } from '@solana/web3.js';
 import { Buffer } from 'buffer';
 import { createRequest, encodeRequest } from '../src/payments';
-import { ACTION_HEADERS, createActionHandler, disclosure } from './pay';
+import { ACTION_HEADERS, createActionHandler, disclosure } from '../api/pay';
 
 function response() {
   const state = { status: 200, headers: {} as Record<string, string>, body: undefined as unknown };

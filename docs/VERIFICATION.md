@@ -8,6 +8,7 @@ Snapshot: Receivables, 23/09/2026. No real payment is claimed yet.
 - 25 tests passed in 3 files, Vitest 4.1.11: exact transfer/Memo proofs, tampering, duplicate/expiry/pending guards, synchronous persistence before broadcast, Action metadata/unsigned transaction/CORS and workspace/CSV integer accounting.
 - These tests use explicit offline fixtures; fixtures never enter the user interface or establish real onchain evidence.
 - Dependency audit: 4 moderate transitive findings in web3.js/jayson/uuid/stream-json; no high or critical findings. No forced downgrade applied.
+- First public Action probe caught a CommonJS/ESM incompatibility in rpc-websockets 9.3.9 / UUID 14. It was reproduced with Node's ESM-require interop disabled. The dependency is pinned to 9.3.8 / UUID 11; CI now runs the same import guard before tests. Vercel and CI target Node 22. Action tests live outside `api/` so they are not deployed as functions.
 
 ## Browser and live network evidence
 

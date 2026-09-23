@@ -3,10 +3,13 @@
   "version": "0.2.0",
   "private": true,
   "type": "module",
+  "engines": { "node": "22.x" },
+  "overrides": { "rpc-websockets": "9.3.8" },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
+    "check:server-deps": "node --no-experimental-require-module -e \"require('@solana/web3.js')\"",
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run"
   },
