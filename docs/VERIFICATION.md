@@ -1,12 +1,18 @@
 # Verification status
 
-Current snapshot: 23/09/2026. One user-reported Phantom payment has an independently verified Devnet receipt. An approved 92.76-second silent product-tour video has been recorded, but it does not show wallet approval; no hosted video URL or Hackalaunch submission is confirmed. Sections below this current update retain what was known at earlier checks on the same date.
+Current snapshot: 23/09/2026. One user-reported Phantom payment has an independently verified Devnet receipt. The approved 92.76-second silent product-tour video is published on X, and Receivables appears on the public Hackalaunch submissions page. The video lacks wallet approval footage; the listing does not establish organizer eligibility, team-rule compliance, or an award. Sections below this current update retain what was known at earlier checks on the same date.
+
+## Hackalaunch publication — 23/09/2026
+
+The [92.76-second silent product-tour video](https://x.com/NoMotionKol/status/2102829978316657060) was published on X. It does not show wallet approval, so the full video criterion is not met.
+
+After submission, the [public Hackalaunch submissions page](https://hackalaunch.com/h/proof-of-taste#submissions) listed “Receivables — SOL payments with proof” by @NoMotionKol, with the video, repository, payout link and description disclosure. The submitted payout address is `GcMnAoMVpzoQM8fD87AYgduWEBuMn4XfekuAUmW852a2`. No unique entry URL was visible. The public listing confirms that the submission appears there; it is not an organizer eligibility decision, team-rule confirmation, or award.
 
 ## Verified demonstration payment — 23/09/2026
 
 The user reports approving the demonstration payment in Phantom. A read-only Devnet lookup at 17:11:52 UTC independently verified signature `KQvP2y2F1RhyzhaU4YNNdhGkpixAUr42KTgWniqnRpnDvbcjYCci6yM4sVJH3GXrbXT1iPpz4qMTzx5iVTJFxwC`, confirmed in slot 503047831 at 17:10:35 UTC. The exact request matched a 1,000,000-lamport transfer from `8PQiZb87dzMynLPM3K4Ph6bVNDoFTfyg34rMsEjAHCeb` to `2Ga88akVcu85SpbRxCHQkdQyU1jbvve6cMaYWyW1YDh1`, with a 5,000-lamport network fee. A changed-amount request was rejected against the same signature.
 
-The [public evidence JSON](../public/receipt-demo-v1.json) includes the request, check time, receipt URL and Explorer link; the short [demo receipt link](https://solana-receivables.vercel.app/demo) is for fresh verification. This is a Devnet test transfer and a timestamped RPC observation, not a portable certificate, customer adoption, proof of identity/delivery or Mainnet payment. The recorded video does not show wallet approval, no hosted video URL is available yet, and no Hackalaunch submission is confirmed.
+The [public evidence JSON](../public/receipt-demo-v1.json) includes the request, check time, receipt URL and Explorer link; the short [demo receipt link](https://solana-receivables.vercel.app/demo) is for fresh verification. This is a Devnet test transfer and a timestamped RPC observation, not a portable certificate, customer adoption, proof of identity/delivery or Mainnet payment.
 
 ## Phantom priority-fee compatibility — 23/09/2026
 
