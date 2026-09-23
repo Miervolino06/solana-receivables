@@ -1,47 +1,60 @@
-# BEFORE
+# Receivables
 
-[Open the app](https://before-solana.vercel.app) · [Source](https://github.com/Miervolino06/before-solana) · [Verification and remaining demo steps](docs/VERIFICATION.md)
+SOL payment links, a local request workspace, and receipts verified against the exact on-chain payment. Create a request without signing, share its link or QR, then reconcile requests against Solana Devnet and export the results.
 
-BEFORE turns a short prediction or commitment into a public Devnet receipt: one zero-decimal SPL token is minted to the connected wallet, its mint authority is revoked, and the signed statement is recorded by the Memo Program in the same transaction. The app shows the transaction only after it confirms on chain. The statement is limited to 180 UTF-8 bytes.
+## Run
 
-## Run locally
-
-Requirements: Node.js 20 or newer and npm. Copy `.env.example` to `.env.local` if you want to override the public RPC endpoint, then run:
+Node.js 22 and npm:
 
 ```sh
 npm ci
 npm run dev
+npm test
+npm run build
+npm run preview
 ```
 
-Open the local URL printed by Vite. For a production build, run `npm run build`; `npm run preview` serves that build locally. `npm test` runs the project tests. The app uses a standard browser wallet (Phantom is currently wired in) configured for Solana Devnet. Fund a Devnet wallet with test SOL from the [Devnet faucet](https://faucet.solana.com/) before creating a receipt.
+Vite includes working local Action middleware for `/api/pay`. On Vercel, `api/pay.ts` runs as a serverless function. Static preview serves the frontend, not that production function.
 
-`VITE_SOLANA_RPC_URL` is a browser-visible RPC endpoint, not a secret. Vite exposes variables prefixed with `VITE_` in the client bundle. Never put a seed phrase, private key, authenticated RPC credential, or other secret in a `VITE_` variable or this repository. The default endpoint is `https://api.devnet.solana.com`.
+Use a standard Solana wallet on Devnet and two distinct payer/recipient wallets. Test SOL is available from the [Solana faucet](https://faucet.solana.com/), subject to availability. No wallet seed or private key is requested.
 
-## Network and on-chain addresses
+## Configuration
 
-Network: **Solana Devnet**. The token mint is created per receipt, so there is no fixed mint address. The confirmed receipt displays its generated mint address and transaction signature; use those values to inspect that specific record in Solana Explorer with the cluster set to Devnet.
+`.env.example` contains the public frontend RPC setting. `VITE_SOLANA_RPC_URL` defaults to `https://api.devnet.solana.com`. All `VITE_` variables are public in the bundle; never put credentials there.
 
-The app uses these existing programs:
+The Action uses server-side `SOLANA_RPC_URL` and `SITE_ORIGIN`. Configure the actual deployed origin for icon and Action links; Vercel URL variables supply a fallback. Default hostnames in source are not proof of deployment. Both RPC endpoints must be Devnet.
 
-| Program | Address | Use |
+## Network and on-chain footprint
+
+| Program | Address | Purpose |
 | --- | --- | --- |
-| System Program | `11111111111111111111111111111111` | Create and fund the mint account |
-| SPL Token Program | `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA` | Initialize mint, mint one unit, revoke mint authority |
-| Associated Token Account Program | `ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL` | Create the wallet's token account |
-| SPL Memo Program v3 | `MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr` | Include the user's statement in the signed transaction |
+| System Program | `11111111111111111111111111111111` | Native SOL transfer |
+| Memo v3 | `MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr` | Payer-signed canonical request |
 
-The token has zero decimals and a supply of one. The app revokes its mint authority and does not enable a freeze authority. The app does not deploy its own program, create token metadata, or claim the token is a standards-based NFT. No external trading, indexing, or fee protocol is used. The public Solana RPC and Explorer are infrastructure used to submit/read the transaction and inspect its result.
+No token mint addresses, custom deployed programs, custody, escrow, spending approvals or platform fees. Recipient and reference addresses vary by request. The reference is read-only and receives no SOL. Infrastructure: Solana RPC, Solana Explorer and Vercel Functions. Actions discovery is provided by `public/actions.json`.
 
-## What a signature does
+Before signing, the app prepares the exact transfer, estimates its network fee, simulates it and checks the payer balance. Total cost is amount plus network fee. A receipt checks success, exact recipient/amount/reference/Memo, signature and balance changes. See [CHAIN.md](docs/CHAIN.md).
 
-Before asking the wallet to sign, the review screen shows the statement that will be public, the token and account creation, the one token the wallet receives, the rent-exempt SOL needed for new accounts, the network fee estimate, and the permanent-publication risk. Rent and fees are paid by the wallet to the network; the app charges no fee and receives no SOL. Verify the final transaction and its costs in the wallet before approving. A transaction fee may still be charged if a submitted transaction fails.
+## Reconcile and export
 
-The statement is public and cannot be retracted from the ledger. A timestamp proves that the statement was published; it does not prove that a prediction is correct or establish the truth of an identity or claim. The token may later be transferred or burned; the receipt proves its creation and recipient at that time, not permanent ownership. Devnet tokens have no economic value and Devnet state can be reset.
+The browser stores up to 40 requests and signature hints. Reconciliation reads chain evidence serially; a stored signature never means paid by itself. Requested, verified received and checked-open totals use integer lamports. Unchecked, pending and RPC-error records remain unverified rather than being counted as received or open.
 
-## Design and implementation notes
+CSV includes request details, status, check time, available transaction/fee/confirmation evidence and reference. Cells are quoted and formula-leading input is neutralized for spreadsheet use. Keep payment links and signatures: local storage is not a backup, account system or cross-device database.
 
-Product scope, network, constraints, and known evidence gaps are recorded in [PRODUCT.md](PRODUCT.md). The transaction flow and signing disclosure are described in [docs/CHAIN.md](docs/CHAIN.md). Submission status and the short description/design statement are in [docs/SUBMISSION.md](docs/SUBMISSION.md); the <=3 minute real-transaction recording guide is in [docs/DEMO.md](docs/DEMO.md).
+## Actions
 
-The interface uses Manrope and Archivo variable fonts, distributed under SIL Open Font License 1.1, and Lucide icons from `lucide-react` under ISC. React and React DOM are MIT-licensed. The project license is MIT; see [LICENSE](LICENSE). No third-party wallet branding or artwork is presented as BEFORE's identity.
+`GET /api/pay?r=<encoded-request>` returns Action metadata and fee/risk disclosure. `POST` with `{"account":"<payer-wallet>"}` prepares an unsigned transaction. `OPTIONS` handles CORS. Root payment links map to this Action endpoint with their query preserved. It does not sign or submit on the user's behalf. Automatic X rendering, registry verification and compatibility with every external Blink client are not claimed.
 
+## Limits
 
+All request fields are public in the link and paid Memo. The payee label is self-declared; payment proves a transfer, not identity or delivery. This is not a fiscal invoice. Request creation time is not chain confirmation time.
+
+Devnet SOL has no economic value and Devnet can reset. Native transfers are irreversible; failed on-chain transactions may incur fees. Duplicate checks and persistent pending hints reduce accidental retries, but concurrent payments across devices can still both succeed.
+
+## Provenance and shipping status
+
+The earlier BEFORE prototype is separate. Its application/wallet scaffolding was reused during this hackathon according to the user chronology; payment, reconciliation and Actions work belongs to this pivot. The UI follows the user's own Órbita CRM (fdz-crm, origin/master `3fdef60`) as a visual reference: Manrope, Geist Mono, light surfaces and sapphire accents. No CRM source, assets or business data were copied. No organizer opening date is invented.
+
+Source: [GitHub](https://github.com/Miervolino06/solana-receivables). FALTA: verified production deployment, real-wallet payment evidence and demo video. Track these in [VERIFICATION.md](docs/VERIFICATION.md) and [SUBMISSION.md](docs/SUBMISSION.md).
+
+Code retains its MIT license. The UI fonts, Manrope and Geist Mono, use OFL-1.1. React is MIT and Lucide is ISC. Retain upstream notices.

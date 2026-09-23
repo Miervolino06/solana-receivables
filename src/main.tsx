@@ -2,7 +2,7 @@ import './polyfills';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import '@fontsource-variable/manrope';
-import '@fontsource-variable/archivo';
+import '@fontsource-variable/geist-mono';
 import '@solana/wallet-adapter-react-ui/styles.css';
 import { Wallets } from './wallet';
 import App from './App';

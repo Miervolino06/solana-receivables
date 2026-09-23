@@ -1,27 +1,31 @@
-# BEFORE
+# Receivables
 
-<!-- impeccable:product-schema 1 -->
+## User and purpose
 
-## Platform
-web
+A freelancer, creator or small seller needs to request a SOL payment, know whether the exact request was paid, and keep evidence they can share or export. This audience is a product hypothesis, not a claim of customer validation.
 
-## Stack
-Delegated under the user's request to build quickly with the best tools. Vite, React and TypeScript, static hosting, standard Solana wallets. Code-first session chosen to meet today's deadline; no persistent workflow preference inferred.
+## Product loop
 
-## Users
-Hackathon judges and people who want a public record of a prediction or commitment. Audience hypothesis chosen for this first build; not validated with research.
+Create request → share link/QR → payer reviews fee and risks → wallet signs → exact payment verified → workspace reconciled → receipt/CSV exported.
 
-## Product Purpose
-Turn a short statement into a wallet-signed public record on Solana devnet with a one-unit SPL token and an inspectable transaction receipt.
+The core is a native SOL transfer with a reference and signed request Memo on Devnet. No mint, custody, escrow, delegated authority or platform fee.
 
-## Capabilities and Constraints
-Create mint with zero decimals, mint one unit to the creator, revoke mint authority, no freeze authority. Store statement in signed Memo in the same atomic transaction. Estimate network fee and account rent from live RPC before signing. Confirm real chain state before showing proof. No transfers to app operator, no app fee, no mainnet, no custody, no investment-return claims. Token has no offchain metadata and is not marketed as a wallet-rendered NFT.
+## Workspace and proof
 
-## Brand Commitments
-BEFORE is a provisional original app name. English interface for the competition. Original design; no copied exchange or wallet branding.
+Up to 40 requests live in this browser. Pending signatures survive reload when storage succeeds. Every paid result is rechecked from chain; local records are hints. Batch reconciliation separates checked-open, paid, pending and error states, with integer totals and evidence-bearing CSV.
 
-## Evidence on Hand
-User supplied hackathon rules. No preexisting app was found. Transaction signatures, demo video and deployed URL do not yet exist and must never be fabricated.
+“Why this payment matches” compares the requested recipient, amount and reference with the verified transaction. A shared receipt can be checked without connecting a wallet.
 
-## Product Principles
-The signing screen explains exactly what happens, total SOL cost, result and risk. Public content cannot be taken back. A timestamp proves publication, not that a prediction is true. Chain failures remain failures, never simulated successes.
+## Design direction
+
+Neutral working name: Receivables. The current visual reference is the user's own Órbita CRM (fdz-crm origin/master `3fdef60`): Manrope and Geist Mono, light surfaces, sapphire primary actions, a compact rail and floating main panel. The reference is visual only. No CRM code, assets or business data were copied. The previous LINEITEM name, icon and document-first visual direction were rejected.
+
+Keep the payment review and proof especially clear. No fake counters, sample payments presented as real, or decorative token issuance.
+
+## Truth boundaries
+
+Names are self-declared, all link/Memo fields are public, receipts are not fiscal invoices or delivery guarantees. Request creation time comes from the browser; payment time uses chain evidence when available. Devnet can reset. Concurrent cross-device payment is not prevented by native transfers.
+
+## Provenance
+
+Payment pivot approved during this hackathon. BEFORE scaffolding was reused; payment, receipt, Actions and reconciliation are new pivot work. Earlier work is disclosed according to the user's chronology; organizer opening dates are not inferred. Before claiming completion, consult [verification](docs/VERIFICATION.md).
