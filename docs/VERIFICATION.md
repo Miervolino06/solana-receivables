@@ -2,6 +2,20 @@
 
 Snapshot: Receivables, 23/09/2026. No real payment is claimed yet.
 
+## Mobile payment investigation — 23/09/2026
+
+A user reported that Phantom on a phone showed a declined-payment message after approval, and that the review was almost unreadable. Two defects were reproduced locally: the app replaced any error containing `reject`, `declin` or `cancel` with a claim that the user declined; and the review's flex layout held its background to the viewport height while warnings, acknowledgement and the signing action overflowed below it. The close icon also inherited black on graphite.
+
+The review now grows with its content inside its scroll container. At 390×844, its measured height grew from 844px to over 1,270px and contained the final action. The 320px check had no horizontal page overflow and a 48px signing control. Desktop at 1440×900 also kept the action within the review surface. Mobile body copy and full addresses are larger; the close icon and wallet-button hover retain contrast on graphite.
+
+Browser checks used an ignored, local-only harness with a public paying address, live Devnet fee/simulation reads, and a signing callback that can only throw. No key was loaded, and no transaction could be signed or broadcast by that harness. Error feedback was verified beside the payment controls with focus and scroll recovery. These checks do not establish that physical Phantom mobile signing now succeeds.
+
+Wallet Standard sign-only requests now carry `chain: 'solana:devnet'`, bind the selected account to the reviewed payer and require compatible legacy signing support. The response must contain exactly one signed transaction. The existing message/signature checks and persistence-before-broadcast barrier still run afterward. The ignored network option on the legacy Phantom adapter was removed; that fallback still requires the wallet's Devnet setting. No automatic fallback follows a Wallet Standard rejection.
+
+Validation: 45 tests across six files, TypeScript/Vite build and the server dependency import guard passed. Regression cases include explicit chain/account binding, incompatible signing versions, multiple signing responses, wallet error codes, and uncertain broadcast results. A controlled `-32603` error appeared beside the payment control with keyboard focus and its actual detail. Independent review found the missing signing-version check; it was fixed, reproduced by negative tests and re-reviewed without further actionable findings. The design detector reported palette/type advisories, including its stale design sidecar; this pass preserves the approved identity rather than refreshing that catalog.
+
+The known demonstration reference returned no confirmed signatures during this investigation. A fresh user-approved phone transaction and its exact verified receipt remain required.
+
 ## Wallet selector refinement — 23/09/2026
 
 Removed workspace button-style leakage into the portaled wallet selector, including the 145px mobile width cap. The selector has graphite rows, internal gutters, consistent provider icons and readable detection labels. Browser checks used detected Phantom and MetaMask at desktop and 390px: both rows fit without text overflow. Opening from the connection gate and the public Verify header focuses the labeled close button; Tab cycles within the selector and Escape returns focus to the actual opener. No wallet connection or transaction was approved during these checks.

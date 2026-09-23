@@ -54,6 +54,14 @@ npm run verify:receipt -- '<paste your actual receipt URL containing ?r=…&tx=�
 
 The command is read-only: it queries Devnet and prints a JSON result; it does not connect a wallet, sign or submit a transaction. The example is a command template, not a verified receipt. No genuine receipt URL or wallet-approved signature exists for this project yet. RPC responses are the evidence source used by the verifier; an RPC provider can be unavailable or return incomplete history, and Devnet can reset. A later recheck can therefore be unavailable even when an earlier receipt was valid.
 
+## Paying from Phantom on a phone
+
+Open the payment link inside Phantom's browser. In Phantom, open your profile, then **Settings → Developer Settings → Testnet Mode**, and select **Solana Devnet**. Testnet mode applies to app connections as well as balances. See [Phantom's test-network instructions](https://help.phantom.com/articles/use-testnets-in-phantom-5997313271699).
+
+Return to the payment link and connect the funded paying wallet. Choose **Review payment**, read the full recipient and total, then approve in the wallet. If the review expires while reading or switching apps, prepare a fresh review. Connecting the wallet and approving a transfer are separate actions.
+
+If signing fails, the app shows the wallet's available error code and details next to the payment controls. An invalid-transaction error or internal wallet error is not evidence that you declined. If submission or confirmation is uncertain, check the saved signature before another payment; the first transfer could still confirm. A successful payment must end with a verified receipt, not just a wallet approval screen.
+
 ## Limits to know
 
 - Requests and signature hints are stored locally in the browser, up to 40 per workspace. Clearing browser data, changing devices or using another browser profile may remove this history. Keep the links and export the CSV; this is not a backup.

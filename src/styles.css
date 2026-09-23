@@ -27,3 +27,27 @@
 .mobile-description,.mobile-status{display:none}@media(max-width:700px){.request-table:not(.activity-table){min-width:0;width:100%;table-layout:fixed}.request-table:not(.activity-table) th:nth-child(2),.request-table:not(.activity-table) td:nth-child(2),.request-table:not(.activity-table) th:nth-child(4),.request-table:not(.activity-table) td:nth-child(4),.request-table:not(.activity-table) th:nth-child(5),.request-table:not(.activity-table) td:nth-child(5){display:none}.request-table:not(.activity-table) th:nth-child(1){width:53%}.request-table:not(.activity-table) th:nth-child(3){width:39%;text-align:right}.request-table:not(.activity-table) th:nth-child(6){width:8%}.request-table:not(.activity-table) td{height:86px;padding:8px 11px}.request-table:not(.activity-table) td.numeric{text-align:right;font-size:11px;white-space:normal;overflow-wrap:anywhere;line-height:1.4}.request-table:not(.activity-table) td.table-action{padding-right:10px!important}.request-table:not(.activity-table) td .desktop-recipient{display:none}.mobile-description{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mobile-status{display:block;margin-top:5px}.mobile-status .status-pill{font-size:9px;padding:3px 6px}.table-wrap{overflow-x:hidden}.activity-table{min-width:0;width:100%}.activity-table th:nth-child(2),.activity-table td:nth-child(2),.activity-table th:nth-child(4),.activity-table td:nth-child(4){display:none}.activity-table th:nth-child(1){width:54%}.activity-table th:nth-child(3){width:38%}.activity-table th:nth-child(5){width:8%}.activity-table td{height:72px}.activity-table td.numeric{font-size:11px;text-align:right;white-space:normal;overflow-wrap:anywhere}}
 @media(max-width:960px){.page-with-panel.has-panel{display:block}.page-with-panel.has-panel .list-area{display:none}.page-with-panel.has-panel .detail-panel{position:relative;inset:auto;width:100%;max-width:none;min-height:calc(100vh - 190px);border:0;box-shadow:none;overflow:visible}.page-with-panel.has-panel .panel-content{max-width:620px;margin:auto}.page-with-panel.has-panel .panel-top{max-width:none}.page-with-panel.has-panel .detail-amount strong{font-size:27px}}
 .pay-wallet{margin:10px 0 8px}.pay-wallet .wallet-adapter-button{width:100%;justify-content:center;min-height:40px!important;height:40px!important}.linked-request .detail-actions{display:flex;flex-direction:column}.linked-request .pay-action{order:-1;margin:0 0 15px;padding:0 0 16px;border-top:0;border-bottom:1px solid var(--border)}
+
+/* Keep payment review content inside a scrollable, full-height mobile surface. */
+.review-backdrop{align-items:flex-start;overscroll-behavior:contain}
+.review-panel{align-self:flex-start;min-height:100vh;min-height:100dvh;height:auto;color:var(--text)}
+.close-review{width:44px;height:44px;right:18px;top:18px;color:var(--text-2);background:transparent}
+.close-review:hover{color:var(--text);background:var(--surface-3)}
+.pay-wallet .wallet-adapter-dropdown{width:100%}
+.app-layout[data-theme="dark"] .wallet-adapter-button:hover{background:#b3c8ff!important;color:#151920!important}
+@media(max-width:700px){
+  .review-panel{width:100%;padding:max(24px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(30px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left))}
+  .review-panel>p{font-size:14px;line-height:1.55}
+  .review-rows .detail-row,.detail-fields .detail-row{grid-template-columns:minmax(0,1fr);gap:4px;padding:10px 0;font-size:13px;line-height:1.5}
+  .review-rows .detail-row dt,.detail-fields .detail-row dt{font-size:12px}
+  .review-rows .detail-row dd,.detail-fields .detail-row dd{font-size:14px;line-height:1.5}
+  .review-rows .detail-row .address,.detail-fields .detail-row .address{font-size:13px;line-height:1.55;overflow-wrap:anywhere;word-break:break-all}
+  .review-rows .detail-row small{font-size:12px}
+  .review-warning{font-size:14px!important;line-height:1.55!important;padding:13px}
+  .acknowledge{font-size:14px;line-height:1.5;gap:11px}
+  .acknowledge input{width:22px;height:22px}
+  .quote-note{font-size:12px;line-height:1.5}
+  .detail-row .address{font-size:12px;line-height:1.55}
+  .review-panel .button.full,.pay-action .button.full{min-height:48px;font-size:14px}
+  .pay-action .message{font-size:14px;line-height:1.55;margin:12px 0;overflow-wrap:anywhere}
+}

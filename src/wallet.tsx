@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { WalletModalProvider, useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { RPC_URL } from './payments';
 
 function WalletModalAccessibility() {
@@ -30,6 +29,6 @@ function WalletModalAccessibility() {
 }
 
 export function Wallets({ children }: { children: ReactNode }) {
-  const wallets = useMemo(() => [new PhantomWalletAdapter({ network: WalletAdapterNetwork.Devnet })], []);
+  const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
   return <ConnectionProvider endpoint={RPC_URL}><WalletProvider wallets={wallets} autoConnect={false}><WalletModalProvider className="receivables-wallet-modal"><WalletModalAccessibility />{children}</WalletModalProvider></WalletProvider></ConnectionProvider>;
 }

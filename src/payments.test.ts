@@ -3,6 +3,7 @@ import { Keypair, Transaction, type Connection, type Message, type VersionedTran
 import {
   buildPaymentTransaction, createRequest, decodeRequest, encodeRequest, findPayment,
   formatSol, parseSol, preparePayment, sendPayment, verifyPaymentTransaction,
+  signWalletTransaction, WalletSigningError,
   type PaymentRequest,
 } from './payments';
 
@@ -76,12 +77,84 @@ describe('request encoding and money', () => {
 });
 
 describe('Devnet payment proof', () => {
+  it('passes Devnet and the connected payer to a Wallet Standard sign-only feature', async () => {
+    const { payer, req } = fixture();
+    const tx = buildPaymentTransaction(req, payer.publicKey, Keypair.generate().publicKey.toBase58());
+    const account = { address: payer.publicKey.toBase58(), chains: ['solana:devnet'], features: ['solana:signTransaction'] };
+    const signTransaction = vi.fn(async (input: { account: typeof account; transaction: Uint8Array; chain: string }) => {
+      const signed = Transaction.from(input.transaction);
+      signed.sign(payer);
+      return [{ signedTransaction: signed.serialize() }];
+    });
+    const adapter = { standard: true, wallet: { accounts: [account], chains: ['solana:devnet'], features: {
+      'solana:signTransaction': { version: '1.0.0', supportedTransactionVersions: ['legacy'], signTransaction },
+    } } };
+    const fallback = vi.fn(async () => { throw new Error('Legacy signer must not run'); });
+    const signed = await signWalletTransaction(tx, payer.publicKey, adapter, fallback);
+    expect(signTransaction).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ account, chain: 'solana:devnet' }));
+    expect(signed.verifySignatures()).toBe(true);
+    expect(fallback).not.toHaveBeenCalled();
+  });
+  it('does not sign for another account or a Standard wallet without Devnet support', async () => {
+    const { payer, req } = fixture();
+    const tx = buildPaymentTransaction(req, payer.publicKey, Keypair.generate().publicKey.toBase58());
+    const signTransaction = vi.fn();
+    const fallback = vi.fn();
+    const adapter = { standard: true, wallet: { accounts: [
+      { address: Keypair.generate().publicKey.toBase58(), chains: ['solana:devnet'], features: ['solana:signTransaction'] },
+    ], chains: ['solana:devnet'], features: { 'solana:signTransaction': { version: '1.0.0', supportedTransactionVersions: ['legacy'], signTransaction } } } };
+    await expect(signWalletTransaction(tx, payer.publicKey, adapter, fallback)).rejects.toThrow(/payer/i);
+    adapter.wallet.accounts[0].address = payer.publicKey.toBase58();
+    adapter.wallet.chains = ['solana:mainnet'];
+    await expect(signWalletTransaction(tx, payer.publicKey, adapter, fallback)).rejects.toThrow(/Devnet/i);
+    expect(signTransaction).not.toHaveBeenCalled();
+    expect(fallback).not.toHaveBeenCalled();
+  });
+  it('never falls back to another signer after a Standard wallet rejects', async () => {
+    const { payer, req } = fixture();
+    const tx = buildPaymentTransaction(req, payer.publicKey, Keypair.generate().publicKey.toBase58());
+    const account = { address: payer.publicKey.toBase58(), chains: ['solana:devnet'], features: ['solana:signTransaction'] };
+    const signTransaction = vi.fn().mockRejectedValue(new Error('Wallet refused'));
+    const fallback = vi.fn();
+    const adapter = { standard: true, wallet: { accounts: [account], chains: ['solana:devnet'], features: {
+      'solana:signTransaction': { version: '1.0.0', supportedTransactionVersions: ['legacy'], signTransaction },
+    } } };
+    await expect(signWalletTransaction(tx, payer.publicKey, adapter, fallback)).rejects.toThrow('Wallet refused');
+    expect(fallback).not.toHaveBeenCalled();
+  });
   it('verifies a signed two-instruction transfer, memo and exact balance changes', () => {
     const { req, signature, response } = fixture();
     expect(verifyPaymentTransaction(signature, req, response)).toMatchObject({
       recipient: req.recipient, amountLamports: 1_250_000_000n, feeLamports: 5_000n, slot: 42,
     });
     expect((response.transaction.message as Message).instructions).toHaveLength(2);
+  });
+  it.each([
+    { version: '1.0.0', supportedTransactionVersions: [0] },
+    { version: '2.0.0', supportedTransactionVersions: ['legacy'] },
+  ])('rejects incompatible signing capabilities before opening a wallet: %j', async capability => {
+    const { payer, tx } = fixture();
+    const signTransaction = vi.fn();
+    const fallback = vi.fn();
+    const account = { address: payer.publicKey.toBase58(), chains: ['solana:devnet'], features: ['solana:signTransaction'] };
+    const adapter = { standard: true, wallet: { accounts: [account], chains: ['solana:devnet'], features: {
+      'solana:signTransaction': { ...capability, signTransaction },
+    } } };
+    await expect(signWalletTransaction(tx, payer.publicKey, adapter, fallback)).rejects.toThrow(/legacy/i);
+    expect(signTransaction).not.toHaveBeenCalled();
+    expect(fallback).not.toHaveBeenCalled();
+  });
+  it('rejects multiple signing responses for one reviewed payment', async () => {
+    const { payer, tx } = fixture();
+    const signedTransaction = tx.serialize();
+    const signTransaction = vi.fn().mockResolvedValue([{ signedTransaction }, { signedTransaction }]);
+    const fallback = vi.fn();
+    const account = { address: payer.publicKey.toBase58(), chains: ['solana:devnet'], features: ['solana:signTransaction'] };
+    const adapter = { standard: true, wallet: { accounts: [account], chains: ['solana:devnet'], features: {
+      'solana:signTransaction': { version: '1.0.0', supportedTransactionVersions: ['legacy'], signTransaction },
+    } } };
+    await expect(signWalletTransaction(tx, payer.publicKey, adapter, fallback)).rejects.toThrow(/exactly one/i);
+    expect(fallback).not.toHaveBeenCalled();
   });
   it('rejects the wrong amount, recipient, memo, extra instruction, failure and balance mismatch', () => {
     const { req, signature, response } = fixture();
@@ -188,8 +261,58 @@ describe('Devnet payment proof', () => {
     await vi.waitFor(() => expect(sign).toHaveBeenCalledTimes(1));
     await expect(sendPayment(second, sign, rpc)).rejects.toThrow(/in progress/i);
     release();
-    expect((await sending).message).toBe('User canceled');
+    expect(await sending).toBeInstanceOf(WalletSigningError);
+    expect((await sending).message).toContain('User canceled');
     expect(rpc.sendRawTransaction).not.toHaveBeenCalled();
+  });
+  it('reports a mobile wallet transaction rejection without claiming the payer declined', async () => {
+    const { payer, req } = fixture();
+    const rpc = rpcMock();
+    const prepared = await preparePayment(req, payer.publicKey, rpc);
+    const adapterError = new Error('Transaction rejected') as Error & { error?: { code: number } };
+    adapterError.error = { code: -32003 };
+    const failure = await sendPayment(prepared, async () => { throw adapterError; }, rpc).catch(error => error);
+    expect(failure).toBeInstanceOf(WalletSigningError);
+    expect(failure.message).toContain('-32003');
+    expect(failure.message).not.toMatch(/wallet signature declined|payer declined|user declined/i);
+    expect(rpc.sendRawTransaction).not.toHaveBeenCalled();
+  });
+  it('preserves an internal mobile wallet signing code and offers a Devnet check', async () => {
+    const { payer, req } = fixture();
+    const rpc = rpcMock();
+    const prepared = await preparePayment(req, payer.publicKey, rpc);
+    const adapterError = new Error('Something went wrong') as Error & { error?: { code: number } };
+    adapterError.error = { code: -32603 };
+    const failure = await sendPayment(prepared, async () => { throw adapterError; }, rpc).catch(error => error);
+    expect(failure).toBeInstanceOf(WalletSigningError);
+    expect(failure.message).toContain('code -32603');
+    expect(failure.message).toContain('Testnet Mode and Solana Devnet');
+    expect(failure.message).toContain('Something went wrong');
+    expect(rpc.sendRawTransaction).not.toHaveBeenCalled();
+  });
+  it('distinguishes wallet code 4001 from an unclassified cancellation message', async () => {
+    const { payer, req } = fixture();
+    const rpc = rpcMock();
+    const coded = await preparePayment(req, payer.publicKey, rpc);
+    const walletRejection = new Error('Request rejected') as Error & { error?: { code: number } };
+    walletRejection.error = { code: 4001 };
+    const codedFailure = await sendPayment(coded, async () => { throw walletRejection; }, rpc).catch(error => error);
+    expect(codedFailure.message).toContain('Wallet reported the signing request as rejected (code 4001)');
+    const uncoded = await preparePayment(req, payer.publicKey, rpc);
+    const uncodedFailure = await sendPayment(uncoded, async () => { throw new Error('canceled'); }, rpc).catch(error => error);
+    expect(uncodedFailure.message).toContain('Wallet did not return a signed transaction');
+    expect(uncodedFailure.message).not.toContain('code 4001');
+    expect(rpc.sendRawTransaction).not.toHaveBeenCalled();
+  });
+  it('keeps a signed payment pending if RPC submission says transaction rejected', async () => {
+    const { payer, req } = fixture();
+    const rpc = rpcMock();
+    vi.mocked(rpc.sendRawTransaction).mockRejectedValue(new Error('Transaction rejected by RPC'));
+    const prepared = await preparePayment(req, payer.publicKey, rpc);
+    const failure = await sendPayment(prepared, async tx => { tx.sign(payer); return tx; }, rpc).catch(error => error);
+    expect(failure.name).toBe('PendingPaymentError');
+    expect(failure.signature).toBeTruthy();
+    await expect(preparePayment(req, payer.publicKey, rpc)).rejects.toMatchObject({ signature: failure.signature });
   });
   it('does not broadcast if the review expires while the wallet is open', async () => {
     const { payer, req } = fixture();

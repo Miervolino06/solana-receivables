@@ -13,7 +13,7 @@ import ReceiptEvidence from './ReceiptEvidence';
 import {
   PendingPaymentError, FailedPaymentError, createRequest, decodeRequest, encodeRequest,
   explorerUrl, fetchPaymentReceipt, findPayment, formatSol, preparePayment,
-  receiptUrl, requestUrl, sendPayment, shortAddress,
+  receiptUrl, requestUrl, sendPayment, signWalletTransaction, shortAddress,
   type PaymentReceipt, type PaymentRequest, type PreparedPayment,
 } from './payments';
 import {
@@ -28,9 +28,9 @@ type Phase = 'idle' | 'checking' | 'preparing' | 'review' | 'signing' | 'confirm
 type Draft = { label: string; recipient: string; amount: string; description: string };
 const EMPTY: Draft = { label: '', recipient: '', amount: '', description: '' };
 function message(cause: unknown): string {
-  if (cause instanceof PendingPaymentError) return 'Transaction submitted; confirmation is uncertain. Check this signature before paying again.';
+  if (cause instanceof PendingPaymentError) return 'Payment submission or confirmation is uncertain. Check this signature before paying again.';
   if (cause instanceof FailedPaymentError) return 'The transaction failed. Inspect the signature before trying again.';
-  if (cause instanceof Error) return /reject|declin|cancel/i.test(cause.message) ? 'Wallet signature declined. No payment was submitted.' : cause.message;
+  if (cause instanceof Error) return cause.message;
   return 'Could not complete this action. Check your connection and try again.';
 }
 function date(iso: string) { return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(iso)); }
@@ -86,6 +86,8 @@ export default function App({ publicAccess = false, initialPage = 'requests', on
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
   const [pendingSignature, setPendingSignature] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState('');
+  const paymentErrorRef = useRef<HTMLDivElement | null>(null);
   const [ack, setAck] = useState(false);
   const [copied, setCopied] = useState<'request' | 'receipt' | 'action' | null>(null);
   const [verifyInput, setVerifyInput] = useState('');
@@ -116,17 +118,21 @@ export default function App({ publicAccess = false, initialPage = 'requests', on
     setSaved(next);
     setStorageError(saveWorkspace(next));
   }, []);
+  const showPaymentFailure = useCallback((cause: unknown) => {
+    const detail = message(cause);
+    setPhase('idle'); setError(detail); setPaymentError(detail);
+  }, []);
   const showReceipt = useCallback((found: PaymentReceipt) => {
     const key = encodeRequest(found.request);
     setRequest(found.request); setPrepared(null); setPendingSignature(null);
-    setPhase('idle'); setError(''); setNotice('Confirmed transaction verified against this request.');
+    setPhase('idle'); setError(''); setPaymentError(''); setNotice('Confirmed transaction verified against this request.');
     setChecks(current => ({ ...current, [key]: { encoded: key, status: 'paid', receipt: found, checkedAt: Date.now() } }));
     persist({ encoded: key, signature: found.signature });
     history.replaceState(null, '', receiptUrl(found.request, found.signature));
   }, [persist]);
   const verifyTx = useCallback(async (item: PaymentRequest, signature: string) => {
     const id = ++op.current, key = encodeRequest(item);
-    setPhase('checking'); setError(''); setNotice('');
+    setPhase('checking'); setError(''); setPaymentError(''); setNotice('');
     setChecks(current => { const next = { ...current }; delete next[key]; return next; });
     try { const found = await fetchPaymentReceipt(signature, item); if (id === op.current) showReceipt(found); }
     catch (cause) {
@@ -151,6 +157,14 @@ export default function App({ publicAccess = false, initialPage = 'requests', on
     return () => { live = false; };
   }, [requestLink, qrOpen]);
   useEffect(() => () => reconcileAbort.current?.abort(), []);
+  useEffect(() => {
+    if (!paymentError || phase !== 'idle') return;
+    const frame = requestAnimationFrame(() => {
+      paymentErrorRef.current?.focus({ preventScroll: true });
+      paymentErrorRef.current?.scrollIntoView({ block: 'center' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [paymentError, phase]);
   useEffect(() => {
     if (phase !== 'review') return;
     const dialog = document.querySelector<HTMLElement>('.review-panel');
@@ -195,7 +209,7 @@ export default function App({ publicAccess = false, initialPage = 'requests', on
     if (publicAccess && next === 'verify' && onVerify) { onVerify(); return; }
     if (publicAccess && next !== 'verify' && onWorkspace) { onWorkspace(); return; }
     ++op.current;
-    setPage(next); setPanel('none'); setError(''); setNotice(''); setPrepared(null); setPhase('idle'); setQrOpen(false);
+    setPage(next); setPanel('none'); setError(''); setPaymentError(''); setNotice(''); setPrepared(null); setPhase('idle'); setQrOpen(false);
     setFocusedLink(false);
     history.replaceState(null, '', location.pathname);
   }
@@ -205,13 +219,13 @@ export default function App({ publicAccess = false, initialPage = 'requests', on
     previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     ++op.current;
     setPage('requests'); setPanel('create'); setFocusedLink(false);
-    setError(''); setNotice(''); setPrepared(null); setPhase('idle');
+    setError(''); setPaymentError(''); setNotice(''); setPrepared(null); setPhase('idle');
     history.replaceState(null, '', location.pathname);
   }
   function closePanel() {
     if (phase === 'signing' || phase === 'confirming') return;
     if (publicAccess && onHome) { onHome(); return; }
-    setPanel('none'); setFocusedLink(false);
+    setPanel('none'); setFocusedLink(false); setPaymentError('');
     requestAnimationFrame(() => previousFocus.current?.focus());
   }
   function toggleTheme() {
@@ -227,7 +241,7 @@ export default function App({ publicAccess = false, initialPage = 'requests', on
     const key = encodeRequest(item), entry = savedRef.current.find(value => value.encoded === key);
     setRequest(item); setPanel('detail'); setPrepared(null); setPhase('idle'); setAck(false);
     setFocusedLink(false);
-    setError(''); setNotice(''); setQrOpen(false); setPendingSignature(entry?.pendingSignature || null);
+    setError(''); setPaymentError(''); setNotice(''); setQrOpen(false); setPendingSignature(entry?.pendingSignature || null);
     history.replaceState(null, '', signature ? receiptUrl(item, signature) : requestUrl(item));
     if (searchReference) { void checkFoundFor(item); return; }
     const prior = checks[key];
@@ -260,7 +274,7 @@ export default function App({ publicAccess = false, initialPage = 'requests', on
     reconcileAbort.current?.abort();
     const controller = new AbortController(); reconcileAbort.current = controller;
     const list = [...savedRef.current];
-    setChecks({}); setReconcileDone(0); setReconciling(true); setError(''); setNotice('');
+    setChecks({}); setReconcileDone(0); setReconciling(true); setError(''); setPaymentError(''); setNotice('');
     try {
       await reconcileRequests(list, result => {
         setChecks(current => ({ ...current, [result.encoded]: result }));
@@ -283,20 +297,20 @@ export default function App({ publicAccess = false, initialPage = 'requests', on
   }
   async function prepare() {
     if (!request) return;
-    if (pendingSignature) { setError('Check the submitted signature before another payment review.'); return; }
-    if (!wallet.publicKey) { setError('Connect a Solana wallet to see the live fee and total.'); return; }
+    if (pendingSignature) { showPaymentFailure(new Error('Check the submitted signature before another payment review.')); return; }
+    if (!wallet.publicKey) { showPaymentFailure(new Error('Connect a Solana wallet to see the live fee and total.')); return; }
     const id = ++op.current;
-    setPhase('preparing'); setError(''); setNotice(''); setAck(false);
+    setPhase('preparing'); setError(''); setPaymentError(''); setNotice(''); setAck(false);
     try { const quote = await preparePayment(request, wallet.publicKey); if (id === op.current) { setPrepared(quote); setPhase('review'); } }
-    catch (cause) { if (id === op.current) { setPhase('idle'); setError(message(cause)); } }
+    catch (cause) { if (id === op.current) showPaymentFailure(cause); }
   }
   async function pay() {
     if (!prepared || !wallet.signTransaction || !ack) return;
-    if (!wallet.publicKey || wallet.publicKey.toBase58() !== prepared.payer) { setPrepared(null); setPhase('idle'); setError('Connected wallet changed. Prepare a fresh review.'); return; }
-    if (Date.now() - prepared.preparedAt > 60_000) { setPrepared(null); setPhase('idle'); setError('Network quote expired. Prepare a fresh review.'); return; }
-    setPhase('signing'); setError('');
+    if (!wallet.publicKey || wallet.publicKey.toBase58() !== prepared.payer) { setPrepared(null); showPaymentFailure(new Error('Connected wallet changed. Prepare a fresh review.')); return; }
+    if (Date.now() - prepared.preparedAt > 60_000) { setPrepared(null); showPaymentFailure(new Error('Network quote expired. Prepare a fresh review.')); return; }
+    setPhase('signing'); setError(''); setPaymentError('');
     try {
-      const found = await sendPayment(prepared, async tx => { const signed = await wallet.signTransaction!(tx); setPhase('confirming'); return signed; }, undefined, signature => {
+      const found = await sendPayment(prepared, async tx => { const signed = await signWalletTransaction(tx, wallet.publicKey!, wallet.wallet?.adapter, wallet.signTransaction!); setPhase('confirming'); return signed; }, undefined, signature => {
         const entry = { encoded: encodeRequest(prepared.request), pendingSignature: signature };
         const next = upsertEntry(savedRef.current, entry);
         const issue = saveWorkspace(next);
@@ -311,7 +325,7 @@ export default function App({ publicAccess = false, initialPage = 'requests', on
         setPendingSignature(cause.signature);
         persist({ encoded: encodeRequest(prepared.request), pendingSignature: cause.signature });
       }
-      setPhase('idle'); setError(message(cause));
+      showPaymentFailure(cause);
     }
   }
   async function verifyLink() {
@@ -323,7 +337,7 @@ export default function App({ publicAccess = false, initialPage = 'requests', on
   }
   async function checkFoundFor(item: PaymentRequest) {
     const id = ++op.current, key = encodeRequest(item);
-    setPhase('checking'); setError(''); setNotice('');
+    setPhase('checking'); setError(''); setPaymentError(''); setNotice('');
     setChecks(current => { const next = { ...current }; delete next[key]; return next; });
     try {
       const found = await findPayment(item);
@@ -344,7 +358,7 @@ export default function App({ publicAccess = false, initialPage = 'requests', on
     if (!window.confirm('This transaction may still confirm. A second payment could send SOL twice. Continue?')) return;
     const entry = savedRef.current.find(value => value.encoded === encoded);
     persist({ encoded, ...(entry?.signature ? { signature: entry.signature } : {}) });
-    setPendingSignature(null); setPhase('idle'); setError('');
+    setPendingSignature(null); setPhase('idle'); setError(''); setPaymentError('');
   }
   const title = page === 'requests' ? 'Requests' : page === 'activity' ? 'Activity' : 'Proof desk';
   return <div className={'app-layout ' + (sidebarClosed ? 'sidebar-collapsed' : '')} data-theme={theme} data-accent="sapphire">
@@ -368,10 +382,10 @@ export default function App({ publicAccess = false, initialPage = 'requests', on
         </div>}
         {page === 'activity' && <div className={'page-with-panel ' + (panel === 'detail' ? 'has-panel' : '')}><div className="list-area"><div className="toolbar activity-toolbar"><span>{activityRows.length} {activityRows.length === 1 ? 'receipt' : 'receipts'} verified in this session</span><button className="button quiet" disabled={reconciling || !saved.length} onClick={() => void refreshAll()}><RefreshCw size={16} className={reconciling ? 'spinning' : ''} /> {reconciling ? `Checking ${reconcileDone}/${saved.length}` : 'Check saved requests'}</button><button className="button quiet" disabled={!saved.length} onClick={exportCsv}><ArrowDownToLine size={16} /> Export CSV</button></div>{activityRows.length ? <div className="table-wrap"><table className="request-table activity-table"><thead><tr><th>Payee</th><th>Confirmed</th><th>Amount</th><th>Transaction</th><th className="table-action" /></tr></thead><tbody>{activityRows.map(row => <tr key={row.entry.encoded} onClick={() => open(row.request)}><td><button className="row-open" onClick={event => { event.stopPropagation(); open(row.request); }}>{row.request.label}</button><small>{row.request.description}</small></td><td>{chainDate(row.check!.receipt!.blockTime)}</td><td className="numeric">{sol(row.check!.receipt!.amountLamports)} SOL</td><td className="mono">{shortAddress(row.check!.receipt!.signature)}</td><td className="table-action"><ChevronRight size={16} /></td></tr>)}</tbody></table></div> : <div className="table-empty activity-empty"><Activity size={30} /><h2>No verified activity in this session</h2><p>Check saved requests to find confirmed Devnet transactions. A saved link alone is not a receipt.</p><button className="button primary" disabled={reconciling || !saved.length} onClick={() => void refreshAll()}><RefreshCw size={16} /> Check saved requests</button></div>}</div>{panel === 'detail' && <aside className="detail-panel" key={encoded}><div className="panel-top"><span>{receipt ? 'Verified receipt' : 'Request details'}</span><button onClick={closePanel} aria-label="Close panel"><X size={18} /></button></div>{renderDetail()}</aside>}</div>}
         {page === 'verify' && <ProofDesk link={verifyInput} signature={verifySignature} busy={busy} onLink={value => { setVerifyInput(value); setError(''); }} onSignature={value => { setVerifySignature(value); setError(''); }} onVerify={() => void verifyLink()} />}
-        {(error || notice || storageError || busy || reconciling) && <div className="message-stack" role="status" aria-live="polite">{busy && <div className="message working"><LoaderCircle size={17} className="spinning" />{phase === 'checking' ? 'Checking Solana Devnet…' : phase === 'preparing' ? 'Calculating fee and balance…' : phase === 'signing' ? 'Waiting for wallet signature…' : 'Waiting for confirmation…'}</div>}{reconciling && <div className="message working"><RefreshCw size={17} className="spinning" />Checking saved requests: {reconcileDone} of {saved.length}</div>}{error && <div className="message error"><X size={17} />{error}</div>}{notice && <div className="message success"><Check size={17} />{notice}</div>}{storageError && <div className="message error"><X size={17} />{storageError}</div>}</div>}
+        {(error || notice || storageError || busy || reconciling) && <div className="message-stack" role="status" aria-live="polite">{busy && <div className="message working"><LoaderCircle size={17} className="spinning" />{phase === 'checking' ? 'Checking Solana Devnet…' : phase === 'preparing' ? 'Calculating fee and balance…' : phase === 'signing' ? 'Waiting for wallet signature…' : 'Waiting for confirmation…'}</div>}{reconciling && <div className="message working"><RefreshCw size={17} className="spinning" />Checking saved requests: {reconcileDone} of {saved.length}</div>}{error && (panel !== 'detail' || error !== paymentError) && <div className="message error"><X size={17} />{error}</div>}{notice && <div className="message success"><Check size={17} />{notice}</div>}{storageError && <div className="message error"><X size={17} />{storageError}</div>}</div>}
       </main>
     </div>
-    {phase === 'review' && prepared && request && <div className="review-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) { setPhase('idle'); setPrepared(null); } }}><section className="review-panel" role="dialog" aria-modal="true" aria-labelledby="review-title"><button className="close-review" onClick={() => { setPhase('idle'); setPrepared(null); }} aria-label="Close payment review"><X size={20} /></button><h2 id="review-title">Review payment</h2><p>One wallet signature sends native SOL directly to this address on Devnet. After confirmation, you get a shareable receipt checked against this request.</p><div className="review-amount">{sol(request.amountLamports)} <span>SOL</span></div><div className="review-rows"><Detail label="Payee name">{request.label} <small>self-declared</small></Detail><Detail label="Receiving wallet"><Address value={request.recipient} /></Detail><Detail label="From your wallet"><Address value={prepared.payer} /></Detail><Detail label="Public description">{request.description || 'None'}</Detail><Detail label="Payment amount">{sol(request.amountLamports)} SOL</Detail><Detail label="Network fee">{sol(prepared.feeLamports)} SOL</Detail><Detail label="Platform fee">0 SOL</Detail><Detail label="Total from wallet"><strong>{sol(prepared.totalLamports)} SOL</strong></Detail><Detail label="Wallet balance">{sol(prepared.balanceLamports)} SOL</Detail></div><p className="review-warning">Devnet uses test SOL. This payment is public and irreversible on the network. The payee name does not prove who owns the receiving wallet, and payment does not guarantee delivery. The description becomes public in a transaction memo. A failed on-chain transaction may still cost a network fee.</p><label className="acknowledge"><input type="checkbox" checked={ack} onChange={event => setAck(event.target.checked)} /><span>I checked the full receiving address, amount and public details.</span></label><button className="button primary full" disabled={!ack || !wallet.signTransaction} onClick={() => void pay()}>Sign and send payment <ArrowRight size={17} /></button><small className="quote-note">Quote expires after 60 seconds. Your wallet shows the transaction before signing.</small></section></div>}
+    {phase === 'review' && prepared && request && <div className="review-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) { setPhase('idle'); setPrepared(null); } }}><section className="review-panel" role="dialog" aria-modal="true" aria-labelledby="review-title"><button className="close-review" onClick={() => { setPhase('idle'); setPrepared(null); }} aria-label="Close payment review"><X size={20} /></button><h2 id="review-title">Review payment</h2><p>One wallet signature sends native SOL directly to this address on Devnet. After confirmation, you get a shareable receipt checked against this request.</p><div className="review-amount">{sol(request.amountLamports)} <span>SOL</span></div><div className="review-rows"><Detail label="Payee name">{request.label} <small>self-declared</small></Detail><Detail label="Receiving wallet"><Address value={request.recipient} /></Detail><Detail label="From your wallet"><Address value={prepared.payer} /></Detail><Detail label="Public description">{request.description || 'None'}</Detail><Detail label="Payment amount">{sol(request.amountLamports)} SOL</Detail><Detail label="Network fee">{sol(prepared.feeLamports)} SOL</Detail><Detail label="Platform fee">0 SOL</Detail><Detail label="Total from wallet"><strong>{sol(prepared.totalLamports)} SOL</strong></Detail><Detail label="Wallet balance">{sol(prepared.balanceLamports)} SOL</Detail></div><p className="review-warning">Devnet uses test SOL. This payment is public and irreversible on the network. The payee name does not prove who owns the receiving wallet, and payment does not guarantee delivery. The description becomes public in a transaction memo. A failed on-chain transaction may still cost a network fee.</p><label className="acknowledge"><input type="checkbox" checked={ack} onChange={event => setAck(event.target.checked)} /><span>I checked the full receiving address, amount and public details.</span></label><button className="button primary full" disabled={!ack || !wallet.signTransaction} onClick={() => void pay()}>Sign and send payment <ArrowRight size={17} /></button><small className="quote-note">{wallet.signTransaction ? <>Quote expires after 60 seconds. Ensure your wallet uses Solana Devnet before signing.{wallet.wallet?.adapter.name === 'Phantom' && <> See <a href="https://help.phantom.com/articles/use-testnets-in-phantom-5997313271699" target="_blank" rel="noreferrer">Phantom Testnet Mode</a>.</>}</> : 'This wallet connection cannot return a signed transaction. Receivables cannot safely submit from it.'}</small></section></div>}
   </div>;
 
   function renderCreate() {
@@ -379,6 +393,6 @@ export default function App({ publicAccess = false, initialPage = 'requests', on
   }
   function renderDetail() {
     if (!request) return null;
-    return <div className={'panel-content detail-content ' + (receipt ? 'is-paid' : '')}><div className="detail-heading"><div><h2>{request.label}</h2><p>Created {date(request.createdAt)}</p></div><Status state={checks[encoded]} pending={pendingSignature || undefined} /></div><div className="detail-amount"><span>Requested</span><strong>{sol(request.amountLamports)} <small>SOL</small></strong></div><div className="detail-fields"><Detail label="For">{request.description || 'No description'}</Detail><Detail label="Receiving wallet"><Address value={request.recipient} /></Detail><Detail label="Reference"><Address value={request.reference} /></Detail><Detail label="Network">Solana Devnet</Detail></div>{receipt ? <div className="receipt-detail"><div className="receipt-title"><CheckCircle2 size={20} /><strong>Payment verified</strong></div><p>Reconstructed from a confirmed Devnet transaction. This receipt matches the exact request.</p><ReceiptEvidence receipt={receipt} checkedAt={matchedCheck?.checkedAt} onRecheck={() => void verifyTx(request, receipt.signature)} /><Detail label="Confirmed">{chainDate(receipt.blockTime)}</Detail><Detail label="Payer"><Address value={receipt.payer} /></Detail><Detail label="Transaction"><a href={explorerUrl(receipt.signature)} target="_blank" rel="noreferrer"><Address value={receipt.signature} /> <ArrowUpRight size={14} /></a></Detail><Detail label="Slot">{receipt.slot.toLocaleString('en-US')}</Detail><Detail label="Network fee">{sol(receipt.feeLamports)} SOL</Detail><button className="button primary full" onClick={() => void copy('receipt')}>{copied === 'receipt' ? <Check size={16} /> : <Copy size={16} />}{copied === 'receipt' ? ' Proof link copied' : ' Copy proof link'}</button><button className="button secondary full" onClick={() => window.print()}><ArrowDownToLine size={16} /> Save or print receipt</button><input className="link-field" value={proofLink} readOnly aria-label="Receipt link, select to copy" onFocus={event => event.target.select()} /></div> : <div className="detail-actions"><button className="button primary full" onClick={() => void copy('request')}>{copied === 'request' ? <Check size={16} /> : <Copy size={16} />}{copied === 'request' ? ' Link copied' : ' Copy payment link'}</button><button className="button secondary full" onClick={() => setQrOpen(value => !value)}><QrCode size={16} />{qrOpen ? 'Hide QR code' : 'Show QR code'}</button>{qrOpen && <div className="qr-frame">{qr ? <img src={qr} alt="QR code for this exact request link" /> : <LoaderCircle className="spinning" />}</div>}<input className="link-field" value={requestLink} readOnly aria-label="Payment link, select to copy" onFocus={event => event.target.select()} />{actionLink && <div className="action-share"><button className="text-link" onClick={() => void copy('action')}>{copied === 'action' ? <Check size={14} /> : <Copy size={14} />}{copied === 'action' ? ' Action link copied' : ' Copy Solana Action link'}</button><small>For supported Solana Action clients. The payment link above opens this review.</small></div>}<button className="button secondary full" disabled={busy} onClick={() => void checkPayment()}><RefreshCw size={16} /> Check payment</button><div className="pay-action"><h3>Pay this request</h3><p>See the exact address, network fee, total and balance before your wallet signs.</p><div className="pay-wallet"><WalletMultiButton /></div><small>{wallet.publicKey ? 'Connected: ' + shortAddress(wallet.publicKey.toBase58()) : 'Connect a wallet to continue.'}</small><button className="button primary full" disabled={busy || Boolean(pendingSignature)} onClick={() => void prepare()}>Review payment <ArrowRight size={16} /></button></div>{pendingSignature && <div className="pending-box"><strong>Submitted signature needs a check</strong><p>The payment may still confirm. Another transfer could pay twice.</p><button className="button secondary full" onClick={() => void verifyTx(request, pendingSignature)}><RefreshCw size={16} /> Check signature</button><a href={explorerUrl(pendingSignature)} target="_blank" rel="noreferrer">Inspect in explorer <ExternalLink size={14} /></a><button className="text-link danger" onClick={abandonPending}>Start a fresh review anyway</button></div>}</div>}<div className="detail-disclosure"><strong>Devnet · test SOL</strong><p>Transactions are public and irreversible on this network. A wallet address does not verify the payee's identity. Payment does not guarantee delivery. Devnet can reset. Platform fee: 0 SOL.</p><a href="https://faucet.solana.com/" target="_blank" rel="noreferrer">Get Devnet SOL <ExternalLink size={13} /></a></div></div>;
+    return <div className={'panel-content detail-content ' + (receipt ? 'is-paid' : '')}><div className="detail-heading"><div><h2>{request.label}</h2><p>Created {date(request.createdAt)}</p></div><Status state={checks[encoded]} pending={pendingSignature || undefined} /></div><div className="detail-amount"><span>Requested</span><strong>{sol(request.amountLamports)} <small>SOL</small></strong></div><div className="detail-fields"><Detail label="For">{request.description || 'No description'}</Detail><Detail label="Receiving wallet"><Address value={request.recipient} /></Detail><Detail label="Reference"><Address value={request.reference} /></Detail><Detail label="Network">Solana Devnet</Detail></div>{receipt ? <div className="receipt-detail"><div className="receipt-title"><CheckCircle2 size={20} /><strong>Payment verified</strong></div><p>Reconstructed from a confirmed Devnet transaction. This receipt matches the exact request.</p><ReceiptEvidence receipt={receipt} checkedAt={matchedCheck?.checkedAt} onRecheck={() => void verifyTx(request, receipt.signature)} /><Detail label="Confirmed">{chainDate(receipt.blockTime)}</Detail><Detail label="Payer"><Address value={receipt.payer} /></Detail><Detail label="Transaction"><a href={explorerUrl(receipt.signature)} target="_blank" rel="noreferrer"><Address value={receipt.signature} /> <ArrowUpRight size={14} /></a></Detail><Detail label="Slot">{receipt.slot.toLocaleString('en-US')}</Detail><Detail label="Network fee">{sol(receipt.feeLamports)} SOL</Detail><button className="button primary full" onClick={() => void copy('receipt')}>{copied === 'receipt' ? <Check size={16} /> : <Copy size={16} />}{copied === 'receipt' ? ' Proof link copied' : ' Copy proof link'}</button><button className="button secondary full" onClick={() => window.print()}><ArrowDownToLine size={16} /> Save or print receipt</button><input className="link-field" value={proofLink} readOnly aria-label="Receipt link, select to copy" onFocus={event => event.target.select()} /></div> : <div className="detail-actions"><button className="button primary full" onClick={() => void copy('request')}>{copied === 'request' ? <Check size={16} /> : <Copy size={16} />}{copied === 'request' ? ' Link copied' : ' Copy payment link'}</button><button className="button secondary full" onClick={() => setQrOpen(value => !value)}><QrCode size={16} />{qrOpen ? 'Hide QR code' : 'Show QR code'}</button>{qrOpen && <div className="qr-frame">{qr ? <img src={qr} alt="QR code for this exact request link" /> : <LoaderCircle className="spinning" />}</div>}<input className="link-field" value={requestLink} readOnly aria-label="Payment link, select to copy" onFocus={event => event.target.select()} />{actionLink && <div className="action-share"><button className="text-link" onClick={() => void copy('action')}>{copied === 'action' ? <Check size={14} /> : <Copy size={14} />}{copied === 'action' ? ' Action link copied' : ' Copy Solana Action link'}</button><small>For supported Solana Action clients. The payment link above opens this review.</small></div>}<button className="button secondary full" disabled={busy} onClick={() => void checkPayment()}><RefreshCw size={16} /> Check payment</button><div className="pay-action"><h3>Pay this request</h3><p>See the exact address, network fee, total and balance before your wallet signs.</p><div className="pay-wallet"><WalletMultiButton /></div><small>{wallet.publicKey ? 'Connected: ' + shortAddress(wallet.publicKey.toBase58()) : 'Connect a wallet to continue.'}</small>{paymentError && <div className="message error" role="alert" tabIndex={-1} ref={paymentErrorRef}><X size={17} />{paymentError}</div>}<button className="button primary full" disabled={busy || Boolean(pendingSignature)} onClick={() => void prepare()}>Review payment <ArrowRight size={16} /></button></div>{pendingSignature && <div className="pending-box"><strong>Submitted signature needs a check</strong><p>The payment may still confirm. Another transfer could pay twice.</p><button className="button secondary full" onClick={() => void verifyTx(request, pendingSignature)}><RefreshCw size={16} /> Check signature</button><a href={explorerUrl(pendingSignature)} target="_blank" rel="noreferrer">Inspect in explorer <ExternalLink size={14} /></a><button className="text-link danger" onClick={abandonPending}>Start a fresh review anyway</button></div>}</div>}<div className="detail-disclosure"><strong>Devnet · test SOL</strong><p>Transactions are public and irreversible on this network. A wallet address does not verify the payee's identity. Payment does not guarantee delivery. Devnet can reset. Platform fee: 0 SOL.</p><a href="https://faucet.solana.com/" target="_blank" rel="noreferrer">Get Devnet SOL <ExternalLink size={13} /></a></div></div>;
   }
 }

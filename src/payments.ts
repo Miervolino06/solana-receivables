@@ -48,6 +48,32 @@ export class PendingPaymentError extends Error {
 export class FailedPaymentError extends Error {
   constructor(message: string, public readonly signature: string) { super(message); this.name = 'FailedPaymentError'; }
 }
+export class WalletSigningError extends Error {
+  constructor(cause: unknown) {
+    const code = walletErrorCode(cause);
+    const detail = cause instanceof Error ? cause.message.trim().slice(0, 180) : '';
+    const reason = code === 4001 ? 'Wallet reported the signing request as rejected'
+      : code === -32003 ? 'Wallet rejected the transaction as invalid'
+      : code === -32603 ? 'Wallet reported an internal signing error'
+      : 'Wallet did not return a signed transaction';
+    const guidance = code === -32003 || code === -32603
+      ? ' Check your wallet Testnet Mode and Solana Devnet, then reopen this payment for a fresh review.' : '';
+    super(`${reason}${code === null ? '' : ` (code ${code})`}. Receivables did not broadcast a payment.${guidance}${detail ? ` Wallet detail: ${detail}` : ''}`);
+    this.name = 'WalletSigningError';
+  }
+}
+
+function walletErrorCode(cause: unknown): number | null {
+  const seen = new Set<object>();
+  let current = cause;
+  for (let depth = 0; depth < 5 && current && typeof current === 'object' && !seen.has(current); depth++) {
+    seen.add(current);
+    const value = current as { code?: unknown; error?: unknown; cause?: unknown };
+    if (typeof value.code === 'number' && Number.isSafeInteger(value.code)) return value.code;
+    current = value.error ?? value.cause;
+  }
+  return null;
+}
 
 function equalBytes(a: Uint8Array, b: Uint8Array): boolean {
   return a.length === b.length && a.every((value, index) => value === b[index]);
@@ -179,6 +205,43 @@ export function buildPaymentTransaction(request: PaymentRequest, payer: PublicKe
   return new Transaction({ feePayer: payer, recentBlockhash: blockhash }).add(...paymentInstructions(valid, payer));
 }
 
+type StandardPaymentAccount = { address: string; chains: readonly string[]; features: readonly string[] };
+type StandardPaymentAdapter = { standard: true; wallet: {
+  accounts: readonly StandardPaymentAccount[]; chains: readonly string[];
+  features: Record<string, { version?: string; supportedTransactionVersions?: readonly (number | string)[]; signTransaction?: (input: { account: StandardPaymentAccount; transaction: Uint8Array; chain: string }) => Promise<readonly { signedTransaction: Uint8Array }[]> } | undefined>;
+} };
+
+/** Wallet Standard accepts an explicit chain; wallet-adapter's sign-only wrapper omits it. */
+export async function signWalletTransaction(
+  transaction: Transaction, payer: PublicKey, adapter: unknown,
+  legacySign: (transaction: Transaction) => Promise<Transaction>,
+): Promise<Transaction> {
+  if (!adapter || typeof adapter !== 'object' || !('standard' in adapter) || adapter.standard !== true) {
+    return legacySign(transaction);
+  }
+  const standard = adapter as StandardPaymentAdapter;
+  const wallet = standard.wallet;
+  const account = wallet?.accounts?.find(value => value.address === payer.toBase58());
+  if (!account) throw new Error('Connected Wallet Standard account does not match the reviewed payer. Reconnect and prepare again.');
+  const chain = 'solana:devnet';
+  if (!wallet.chains?.includes(chain) || !account.chains?.includes(chain)) {
+    throw new Error('Connected wallet does not advertise Solana Devnet. Enable Testnet Mode, reconnect and prepare again.');
+  }
+  const feature = wallet.features?.['solana:signTransaction'];
+  if (!account.features?.includes('solana:signTransaction') || typeof feature?.signTransaction !== 'function') {
+    throw new Error('Connected wallet cannot sign a transaction without sending it. Choose a compatible wallet connection.');
+  }
+  if (feature.version !== '1.0.0' || !feature.supportedTransactionVersions?.includes('legacy')) {
+    throw new Error('This wallet connection cannot sign this legacy payment transaction. Choose a compatible wallet connection.');
+  }
+  const result = await feature.signTransaction({ account, chain,
+    transaction: transaction.serialize({ requireAllSignatures: false, verifySignatures: false }) });
+  if (!Array.isArray(result) || result.length !== 1) throw new Error('Wallet must return exactly one signed transaction for this payment.');
+  const signedBytes = result?.[0]?.signedTransaction;
+  if (!(signedBytes instanceof Uint8Array)) throw new Error('Wallet did not return a signed transaction.');
+  return Transaction.from(signedBytes);
+}
+
 /** Pure chain proof, also used by offline tests. */
 export function verifyPaymentTransaction(signature: string, request: PaymentRequest, response: VersionedTransactionResponse): PaymentReceipt {
   signatureKey(signature);
@@ -307,7 +370,9 @@ async function sendPreparedPayment(prepared: PreparedPayment, signTransaction: (
   const expected = buildPaymentTransaction(prepared.request, new PublicKey(guard.payer), guard.blockhash).serializeMessage();
   if (!equalBytes(expected, guard.message)) throw new Error('Prepared transaction changed. Prepare again.');
   if (await findPayment(prepared.request, rpc)) throw new Error('This request already has a verified payment. Check its receipt before paying again.');
-  const signed = await signTransaction(prepared.transaction);
+  let signed: Transaction;
+  try { signed = await signTransaction(prepared.transaction); }
+  catch (error) { throw new WalletSigningError(error); }
   if (!equalBytes(signed.serializeMessage(), guard.message)) throw new Error('Wallet changed the transaction. Request canceled.');
   if (!signed.verifySignatures()) throw new Error('Wallet signature is missing or invalid.');
   if (Date.now() - guard.preparedAt > MAX_PREPARED_AGE_MS) throw new Error('Payment review expired while the wallet was open. Prepare again.');
