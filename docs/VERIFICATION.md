@@ -2,6 +2,10 @@
 
 Snapshot: Receivables, 23/09/2026. No real payment is claimed yet.
 
+## English-only update — 23/09/2026
+
+The public website, wallet entry, loading/accessibility text, page metadata and user guide now use English only. The language selector and saved language preference logic were removed; dark appearance and the payment flow are preserved. Production build/TypeScript checks passed, and the English landing and wallet entry were inspected in browser. The earlier bilingual verification below is retained as release history.
+
 ## Public introduction and wallet entry — 23/09/2026
 
 The public `/` now explains the product in Portuguese or English before wallet connection. `/app` opens the wallet entry screen until a wallet is connected; `/verify` and shared `?r=` request/receipt links remain public. This is a frontend entry flow, not account authentication. Dark graphite is the primary appearance, with the workspace honoring an explicitly saved light preference.

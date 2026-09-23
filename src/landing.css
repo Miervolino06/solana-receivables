@@ -32,9 +32,6 @@
 .lp-nav a { display: inline-flex; align-items: center; min-height: 44px; color: var(--lp-muted); font-size: 13px; font-weight: 700; white-space: nowrap; }
 .lp-nav a:hover { color: var(--lp-blue); }
 .lp-header-actions { display: flex; align-items: center; gap: 15px; }
-.lp-language { display: flex; align-items: center; background: #f0f3f8; border-radius: 9px; padding: 3px; }
-.lp-language button { min-width: 44px; min-height: 44px; padding: 0 7px; background: transparent; border: 0; border-radius: 7px; color: var(--lp-muted); font-family: 'Geist Mono Variable', monospace; font-size: 11px; font-weight: 700; }
-.lp-language button[aria-pressed="true"] { background: #fff; color: var(--lp-ink); box-shadow: 0 2px 8px rgba(32, 38, 49, .12); }
 .lp-header-enter { display: inline-flex; align-items: center; gap: 12px; min-height: 44px; border: 0; border-radius: 10px; padding: 0 16px; background: var(--lp-blue); color: #fff; font-size: 13px; font-weight: 750; white-space: nowrap; transition: background .25s ease, transform .25s cubic-bezier(.2,.8,.2,1); }
 .lp-header-enter:hover, .lp-button-primary:hover { background: var(--lp-blue-dark); text-decoration: none; transform: translateY(-2px); }
 .lp-header-enter svg, .lp-button svg { width: 17px; height: 17px; stroke-width: 2; flex: none; }
@@ -177,7 +174,6 @@
   .lp-header-inner { height: 65px; gap: 8px; }
   .lp-wordmark { font-size: 18px; }
   .lp-header-actions { gap: 8px; }
-  .lp-language button { min-width: 44px; min-height: 44px; font-size: 10px; }
   .lp-header-enter { min-height: 44px; padding-inline: 10px; font-size: 11px; gap: 5px; }
   .lp-header-enter svg { width: 14px; height: 14px; }
   .lp-hero { gap: 38px; min-height: 0; padding-block: 39px 62px; }
@@ -262,9 +258,6 @@
 .landing *::selection { background: #344869; color: #fff; }
 .lp-header { background: #101317; border-bottom-color: #303741; }
 .lp-nav a { color: #b4bfcc; }
-.lp-language { background: #20262d; }
-.lp-language button { color: #b4bfcc; }
-.lp-language button[aria-pressed="true"] { background: #35404c; color: #eef0f3; box-shadow: 0 3px 9px rgba(0, 0, 0, .26); }
 .lp-header-enter, .lp-button-primary { color: #101317; background: #93b1ff; box-shadow: 0 10px 22px rgba(0, 0, 0, .2); }
 .lp-header-enter:hover, .lp-button-primary:hover { color: #101317; background: #b9ccff; }
 .lp-devnet { color: #f0c887; background: #342c1f; }

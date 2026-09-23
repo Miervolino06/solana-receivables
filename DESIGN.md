@@ -132,7 +132,7 @@ Depth is tonal with a restrained ambient shadow: graphite separates the default 
 
 ## Shapes
 
-Workspace controls use gently rounded corners (12px), request containers use 16px, and the floating workspace uses 18px. Landing-specific authored radii include 10–11px CTAs, a 19px demo frame, and 16px paper sheets; smaller language, status and step controls use compact 7–9px corners. Compact chips and navigation items may use 7–12px rounding according to their role. Borders stay thin and low contrast; status is conveyed with text and a small marker as well as color.
+Workspace controls use gently rounded corners (12px), request containers use 16px, and the floating workspace uses 18px. Landing-specific authored radii include 10–11px CTAs, a 19px demo frame, and 16px paper sheets; smaller status and step controls use compact 7–9px corners. Compact chips and navigation items may use 7–12px rounding according to their role. Borders stay thin and low contrast; status is conveyed with text and a small marker as well as color.
 
 ## Components
 

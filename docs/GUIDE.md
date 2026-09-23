@@ -1,0 +1,53 @@
+# Receive SOL payments with a link and a verifiable receipt
+
+Receivables turns a payment request into a link or QR code. The payer reviews the details and authorizes the transfer in their own wallet. The app then checks Solana to see whether that transfer matches the request.
+
+**The currently published version is a Devnet demonstration.** Test SOL has no economic value. The app does not yet support commercial payments on Mainnet.
+
+[Open the website](https://solana-receivables.vercel.app/) · [Open the workspace](https://solana-receivables.vercel.app/app) · [English technical README](../README.md)
+
+## What it does
+
+When you already accept crypto, the challenge is not learning what a wallet is. It is sending the right payment details to the right person and being able to check the payment afterward. A Receivables request brings the recipient, amount and reference together in a shareable link. The app checks the network for a transfer matching those details; the resulting receipt can be shared, and requests can be exported to CSV.
+
+> **Illustrative example, not a real payment:** You agree to test a payment of **0.01 Devnet SOL** for a service. Create a request, send its link to the payer, and they open the review screen. The app shows the recipient, amount and estimated network fee before opening the wallet for approval. The wallet asks the payer to approve and sign the transfer. After signing, Receivables checks the transaction. If the details match, it creates a receipt that anyone can verify without connecting a wallet.
+
+A clear link and an easy-to-check receipt may reduce back-and-forth messages about payment confirmation and help present a more professional workflow to clients. This is a possible product benefit, not one validated with clients.
+
+## Try it out
+
+1. Open the [workspace](https://solana-receivables.vercel.app/app) and connect a wallet set to **Solana Devnet**. Connecting is a convenience for accessing the interface. It does not prove your identity with a signature or transfer SOL.
+2. Create a request with the receiving wallet address, a small amount such as **0.01 test SOL**, and a description that helps identify the request. The app prepares a link and QR code. Save the link: requests are stored in this browser's local storage, not in a cloud-synced account.
+3. Use a second wallet as the payer. Open the link and check the address, amount and estimated fee. Simulation helps check the transaction before submission; only explicit approval in the wallet signs and sends the payment.
+4. After submission, wait for the network check. The app marks a request as received only after verifying the signature and matching the recipient, amount, reference and Memo to the request. Open and share the receipt or export the activity to CSV.
+
+To get test SOL, use the [official Solana faucet](https://faucet.solana.com/), if available. Do not enter your seed phrase or private key on the site. Keep testing on Devnet: test SOL must not be treated as money.
+
+## Fees in plain language
+
+- **Receivables fee:** This flow charges no platform fee.
+- **Solana network fee:** The network may charge a small transaction fee. The app queries an RPC service and shows the estimate separately from the requested amount, before opening the wallet for approval. The final fee may vary.
+- **Total leaving the wallet:** The requested amount plus the displayed network fee. Check the total in your wallet before approving.
+
+## What are SOL, a wallet and Devnet?
+
+**SOL** is Solana's native asset and can be used to pay a transaction fee. A **wallet** holds the keys that authorize operations; Receivables never receives your private key. **Devnet** is a network separate from Mainnet, used to test apps with SOL that has no economic value.
+
+## What the receipt proves
+
+The receipt shows evidence checked on the blockchain: a valid signature and a confirmed transaction matching the request's recipient, amount, reference and Memo. Anyone with the link can check whether the indicated transfer matches the request.
+
+This demonstrates a transfer on Devnet. It does not establish who is behind a wallet, that a service was delivered, that a fiscal invoice was issued, or that a commercial payment was made on Mainnet. The request creator supplies the displayed name, and the link and Memo details are public to anyone with access. Avoid including private information.
+
+## Limits to know
+
+- Requests and signature hints are stored locally in the browser, up to 40 per workspace. Clearing browser data, changing devices or using another browser profile may remove this history. Keep the links and export the CSV; this is not a backup.
+- The app may show pending states or a lookup error. These do not mean a payment was received. A signature hint stored in the browser is not proof by itself.
+- Devnet SOL has no economic value and Devnet may reset. Native transfers are irreversible, and failed transactions may incur a fee.
+- Receivables is not a protected multi-user account, fiscal system, custodian or guarantee of delivery. Simultaneous payments for the same request from different devices can still occur.
+
+## For service providers
+
+If this flow becomes available for real payments, a payment link paired with verifiable evidence may make confirmation between provider and client easier. For now, use the published product only to explore the Devnet flow; do not send requests as commercial bills. A signed Devnet test and a demo video are still pending as project evidence.
+
+For configuration, on-chain programs, local setup, provenance and verification status, see the [technical README](../README.md), [verification limits](VERIFICATION.md) and [submission notes](SUBMISSION.md).

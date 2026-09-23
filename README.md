@@ -4,7 +4,7 @@ Request and check SOL payments with a link or QR code. The payer reviews the amo
 
 **This published version is a Devnet demonstration.** Devnet SOL is for testing and has no economic value. Mainnet commercial payments are not available here.
 
-[Open the public website](https://solana-receivables.vercel.app/) · [Open the payment workspace](https://solana-receivables.vercel.app/app) · [Leia o guia em português](docs/GUIA.md)
+[Open the public website](https://solana-receivables.vercel.app/) · [Open the payment workspace](https://solana-receivables.vercel.app/app) · [User guide](docs/GUIDE.md)
 
 ## How it works
 
