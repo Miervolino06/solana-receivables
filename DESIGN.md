@@ -188,3 +188,7 @@ Payment review is a focused dialog. Lead with the SOL amount, then show payer, f
 - **Don't** style local records or submitted signatures as verified before successful chain checking.
 - **Don't** use the CRM's code, assets or business data; it is a visual reference only.
 - **Don't** let decoration outrank the recipient, exact amount, fee disclosure or match evidence.
+
+## Inspectable evidence — 23 September 2026
+
+The public landing leads from “Request SOL. Verify it arrived.” to a proof section with explicit matching conditions and a public /verify desk. The desk keeps input and verification rules side by side on desktop, stacked on mobile. Network observations use neutral styling and a check timestamp; a slot is never styled as payment evidence. Verified receipts compare request and chain fields, expose matched request data, offer a fresh read-only check and downloadable JSON, and retain an Explorer link. The receipt and its evidence timestamp derive from the same successful check; an invalidated or failed check removes both. English-only, graphite/sapphire, Manrope and Geist Mono remain unchanged.

@@ -1,42 +1,36 @@
-# Submission package
+# Submission copy
 
-Product: **Receivables**. Network: **Solana Devnet**. Package: `solana-receivables`.
+Product: **Receivables** · Network: **Solana Devnet** · Package: `solana-receivables`
 
 Deadline recorded from the [official event page](https://www.hackalaunch.com/h/proof-of-taste): **23/09/2026, 21:28 America/Sao_Paulo**, or 24/09/2026 00:28 UTC.
 
 - Repository: https://github.com/Miervolino06/solana-receivables
-- Public production: https://solana-receivables.vercel.app/
-- FALTA: real-wallet payment signature and public verified receipt.
-- FALTA: uploaded demo video, at most three minutes.
-
-The public BEFORE prototype is historical; its URLs are not Receivables deployment evidence.
+- Public product: https://solana-receivables.vercel.app/
+- Public Proof desk: https://solana-receivables.vercel.app/verify
+- Evidence instructions: [docs/PROOF.md](PROOF.md)
+- **Still pending:** a real-wallet Devnet payment, its signature and verified receipt URL, and a demo video no longer than three minutes.
 
 ## Short description
 
-Receivables helps creators and small teams request SOL payments and reconcile what was actually received. Share a payment link, review the exact amount and network fee before signing, then verify the transfer against the request. A local workspace checks requests against chain evidence and exports readable receipts and CSV.
+A screenshot does not settle a payment request. Receivables asks the payer to review and sign in their own wallet, then checks the confirmed Devnet transfer against the exact recipient, amount, reference and signed request Memo. Anyone can recheck the receipt and compare it with Solana Explorer.
 
-## Why
+## Why this design
 
-A screenshot or a matching transaction reference should not be enough to mark a request paid. Receivables checks the recipient, amount, signed Memo and actual balance changes.
-
-## Design choice
-
-We make “paid” explainable: every verified payment can be compared with what was requested, while the signing screen states the cost and risks in plain language.
+“Paid” should be explainable. Receivables ties the transfer to the request and shows the match evidence, while disclosing amount, estimated network fee and risks before the wallet opens. This is a Devnet demonstration; test SOL has no economic value.
 
 ## Scope and provenance
 
-System Program transfer plus signed Memo, on Devnet. No mint, custody, delegated authority or platform fee. Payee names are self-declared, request data is public, and these documents are not fiscal invoices. Concurrent duplicate payments remain possible.
+The payment is a native SOL System Program transfer plus a payer-signed Memo. There is no mint, custody, escrow, delegated authority or platform fee. Names are self-declared; request data is public; receipts do not prove identity, service delivery or invoice issuance. Native transfers cannot prevent concurrent duplicate payments.
 
 BEFORE application/wallet scaffolding was reused. The user chronology places this work during the hackathon. Payment requests, proof verification, Actions, reconciliation and CSV belong to this pivot. The user's own Órbita CRM (fdz-crm origin/master `3fdef60`) supplied visual reference only; no source, assets or business data were copied. No organizer opening date is asserted.
 
-## Final checks
+## Evidence state
 
-- [x] Public repo includes setup, program IDs, dependencies and public-only environment example.
-- [x] Production frontend and Action endpoint are publicly reachable and tested.
-- [ ] End-to-end production payment with a standard Solana wallet.
-- [ ] Real Devnet transfer, signature and verified receipt inspected.
-- [ ] Video <=3 minutes shows request, pre-sign disclosure, wallet approval and confirmation.
-- [x] Description, design sentence and provenance included.
-- [ ] Team size <=4, one submission per person and actual submission confirmed.
+- [x] Public repository includes setup instructions and a public-only environment example.
+- [x] Production frontend and Action endpoint were publicly reachable and smoke-checked; those checks submitted no payment.
+- [x] Automated offline fixtures cover transaction-match and tampering rules; fixtures are not chain proof.
+- [ ] Real transfer signed in a standard wallet, with its signature and public receipt independently checked.
+- [ ] Demo video of at most three minutes shows request, cost review, wallet approval, confirmation, proof and independent Explorer check.
+- [ ] Team size, one-submission-per-person rule and actual submission confirmed.
 
-Eligibility in principle does not imply organizer approval. See [VERIFICATION.md](VERIFICATION.md).
+The public BEFORE prototype is historical; its URLs are not Receivables deployment evidence. Eligibility in principle does not imply organizer approval. See [VERIFICATION.md](VERIFICATION.md) for the dated evidence record and [DEMO.md](DEMO.md) for the recording script.

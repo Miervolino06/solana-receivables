@@ -9,11 +9,11 @@ type LandingProps = {
 };
 
 const copy = {
-  navHow: 'How it works', navWho: 'Who it’s for', navFaq: 'Questions', enter: 'Enter',
+  navHow: 'How it works', navWho: 'The proof', navFaq: 'Questions', enter: 'Enter',
   devnet: 'Devnet prototype · test SOL has no economic value',
-  titleA: 'Request crypto.', titleB: 'Check the payment.',
-  intro: 'Create a SOL request, share a link, and see whether the transaction matches exactly what you asked for. A clear record for freelancers and small businesses.',
-  primary: 'Enter and connect wallet', primaryConnected: 'Open workspace', secondary: 'See how it works',
+  titleA: 'Request SOL.', titleB: 'Verify it arrived.',
+  intro: 'A payment link for your work. A receipt you can check against the chain. Keep track of what clients actually paid, with the exact amount and destination accounted for.',
+  primary: 'Enter and connect wallet', primaryConnected: 'Open workspace', secondary: 'Inspect the evidence',
   heroNote: 'Connecting a wallet does not sign a transaction or authorize spending.',
   demoLabel: 'Interactive illustration · no payment was made', demoInstruction: 'Drag the piece or select a step',
   steps: ['Request', 'Review', 'Match'],
@@ -35,7 +35,7 @@ const copy = {
   whoExamples: ['One completed job, one request for a set amount.', 'One sale, one link to share with the buyer.', 'Many requests, one list to check and export.'],
   whoCaveat: 'You need a Solana wallet. This version only uses Devnet and test SOL.',
   trustTitle: 'The limits are clear, too.',
-  trustBody: 'This is a Devnet prototype. Test SOL has no economic value, and the network can reset. There is no evidence here of real payments or customer use yet.',
+  trustBody: 'This version runs on Solana Devnet. It can send and verify test SOL, which has no economic value. Mainnet commercial payments are not available, and Devnet history can reset.',
   trustList: ['No custody: the app does not hold your funds.', 'No conversion to fiat currency.', 'Receipts are not tax invoices or proof of delivery.', 'Names are self-declared; link and Memo data are public.'],
   faqTitle: 'Frequently asked questions',
   faqs: [
@@ -138,7 +138,7 @@ export default function Landing({ onEnter, connected }: LandingProps) {
         <div className="lp-shell lp-header-inner">
           <a className="lp-wordmark" href="#top" aria-label="Receivables">Receivables<span className="lp-wordmark-dot">.</span></a>
           <nav className="lp-nav" aria-label="Main navigation">
-            <a href="#how-it-works">{t.navHow}</a><a href="#who-its-for">{t.navWho}</a><a href="#questions">{t.navFaq}</a>
+            <a href="#how-it-works">{t.navHow}</a><a href="#the-proof">{t.navWho}</a><a href="#questions">{t.navFaq}</a>
           </nav>
           <div className="lp-header-actions">
             <button type="button" className="lp-header-enter" onClick={onEnter}>{t.enter}<ArrowUpRight aria-hidden="true" /></button>
@@ -152,13 +152,23 @@ export default function Landing({ onEnter, connected }: LandingProps) {
             <h1 id="lp-title">{t.titleA}<br/><em>{t.titleB}</em></h1>
             <p className="lp-lead">{t.intro}</p>
             <p className="lp-devnet"><span aria-hidden="true" />{t.devnet}</p>
-            <div className="lp-hero-actions"><button type="button" className="lp-button lp-button-primary" onClick={onEnter}>{cta}<ArrowUpRight aria-hidden="true" /></button><a className="lp-button lp-button-text" href="#how-it-works">{t.secondary}<ArrowDown aria-hidden="true" /></a></div>
+            <div className="lp-hero-actions"><button type="button" className="lp-button lp-button-primary" onClick={onEnter}>{cta}<ArrowUpRight aria-hidden="true" /></button><a className="lp-button lp-button-text" href="#the-proof">{t.secondary}<ArrowDown aria-hidden="true" /></a></div>
             <p className="lp-hero-note">{t.heroNote}</p>
           </div>
           <PaymentScene />
         </section>
 
-        <section className="lp-interlude" aria-labelledby="lp-interlude-title"><div className="lp-shell lp-interlude-inner"><h2 id="lp-interlude-title">{t.interludeA}<br/><span>{t.interludeB}</span></h2><p>{t.interludeBody}</p></div></section>
+        <section id="the-proof" className="lp-proof" aria-labelledby="lp-proof-title">
+          <div className="lp-shell lp-proof-inner">
+            <div className="lp-proof-copy"><h2 id="lp-proof-title">“Paid” needs<br/><em>evidence.</em></h2><p>A client sends a screenshot. You still need to know: did the right amount reach the right wallet, for this request?</p><p>Receivables checks the transaction itself. Every condition has to match before a request earns its paid status.</p><a className="lp-button lp-button-primary" href="/verify">Open the proof desk<ArrowUpRight aria-hidden="true" /></a><small>Public and read-only. No wallet needed.</small></div>
+            <div className="lp-proof-rules"><h3>What a receipt has to prove</h3><dl>
+              <div><dt>Destination</dt><dd>The receiving wallet matches the request exactly.</dd></div>
+              <div><dt>Amount</dt><dd>The recipient’s balance increased by the full requested amount.</dd></div>
+              <div><dt>Original terms</dt><dd>The payer signed the same request, including its reference and description.</dd></div>
+              <div><dt>Execution</dt><dd>The transaction succeeded, its signature is valid, and its instructions and balance changes match.</dd></div>
+            </dl><div className="lp-proof-source"><span>Inspect the transaction. Download the record. Check it again.</span><a href="https://github.com/Miervolino06/solana-receivables/blob/codex/receivables/docs/PROOF.md" target="_blank" rel="noreferrer">How verification works<ArrowUpRight size={15} /></a></div></div>
+          </div>
+        </section>
 
         <section id="how-it-works" className="lp-section lp-how lp-shell" aria-labelledby="lp-how-title">
           <div className="lp-section-intro"><h2 id="lp-how-title">{t.howTitle}</h2><p>{t.howIntro}</p></div>

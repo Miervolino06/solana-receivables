@@ -62,3 +62,11 @@ Independent source review found and confirmed fixes for stale selection receipt 
 Public source: https://github.com/Miervolino06/solana-receivables. The supplied payer wallet still had zero Devnet SOL at 01:19 BRT; the official RPC faucet returned 429 earlier. The user has been asked to use the official web faucet. A successful funded unsigned POST is covered by an explicit test fixture, not yet by a funded live wallet in production.
 
 Local signatures are hints, never proof. RPC errors remain unknown, never paid or unpaid. Cross-device/native transfers cannot guarantee exactly-once settlement. External Blink registry approval and automatic social rendering remain unverified.
+
+## Inspectable proof update — 23 September 2026
+
+Implemented the public proof desk at /verify, a proof section on the landing, a live RPC network-identity/confirmed-slot observation, and timestamped receipt evidence JSON. A read-only CLI reuses the exact payment verifier. Network observations and illustrative landing values are not payment evidence.
+
+Validation: 35 tests in 6 files passed; TypeScript/Vite production build and server import guard passed. Browser inspection covered the dark proof form on desktop and 390px mobile, public entry from the landing, a rejected malformed request link, and actual Devnet identity/slot retrieval. Independent source review found a stale-receipt issue during rechecks; the fix derives receipt and timestamp from one successful check and invalidates before querying. The reviewer rechecked the fix with no actionable finding. A regression test covers cleared, open, error, pending and mismatched results. The CLI rejected a well-formed request paired with an unavailable signature; this negative check is not a paid transaction.
+
+The payer wallet now has Devnet test SOL according to a live confirmed balance lookup. Still missing: user-approved Receivables payment to a distinct recipient, successful browser receipt/download inspection and a real demo recording. No confirmed payment, customer adoption or completed submission is claimed.

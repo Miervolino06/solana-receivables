@@ -11,7 +11,8 @@
     "typecheck": "tsc -b",
     "check:server-deps": "node --no-experimental-require-module -e \"require('@solana/web3.js')\"",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "vitest run"
+    "test": "vitest run",
+    "verify:receipt": "node scripts/verify-receipt.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist-mono": "^5.3.0",

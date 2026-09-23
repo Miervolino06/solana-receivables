@@ -1,17 +1,23 @@
 # Receivables
 
-Request and check SOL payments with a link or QR code. The payer reviews the amount and estimated network fee, then approves the transfer in their own wallet. Receivables checks the resulting Solana transaction against the original request and keeps a shareable receipt.
+**A screenshot does not settle a payment request.** Receivables checks a confirmed SOL transfer against the exact request: recipient, amount, reference and payer-signed Memo. The payer reviews the cost and approves in their own wallet; anyone can recheck a receipt on Devnet and compare it with the transaction in Solana Explorer.
 
 **This published version is a Devnet demonstration.** Devnet SOL is for testing and has no economic value. Mainnet commercial payments are not available here.
 
-[Open the public website](https://solana-receivables.vercel.app/) · [Open the payment workspace](https://solana-receivables.vercel.app/app) · [User guide](docs/GUIDE.md)
+[Open the public website](https://solana-receivables.vercel.app/) · [Open the workspace](https://solana-receivables.vercel.app/app) · [Open the public Proof desk](https://solana-receivables.vercel.app/verify) · [Proof and recheck guide](docs/PROOF.md) · [User guide](docs/GUIDE.md)
 
 ## How it works
 
 1. A recipient creates a request for an amount of SOL and shares its link or QR.
 2. The payer opens it and reviews the recipient, amount and estimated Solana network fee in the app before opening their wallet to approve the transaction.
-3. The wallet signs a native SOL transfer with a read-only reference and a Memo containing the canonical request. The app checks the transaction on Devnet and creates a receipt only when the recipient, amount, reference and Memo match.
+3. The wallet signs a native SOL transfer with a read-only reference and a Memo containing the canonical request. The app checks the confirmed transaction on Devnet and creates a receipt only when the recipient, amount, reference and Memo match, the signature verifies, and balance changes agree.
 4. The workspace can recheck requests, show received/open/unverified states and export available evidence to CSV.
+
+## Inspect a receipt
+
+Open `/verify` and paste the **actual** receipt link (the request link plus its transaction signature). Recheck it against Devnet, save the downloadable JSON record, and open the transaction in Solana Explorer independently. For a negative check, create a different request and check it against that same signature; its request data must not match the signed Memo. A sample Devnet identity or slot is network context, not evidence that a payment occurred. See [PROOF.md](docs/PROOF.md) for the live recheck and command-line procedure.
+
+**Evidence status:** no end-to-end payment has been made with a real wallet in this project session. There is no user-approved signature, real verified receipt URL or demo video yet. Automated fixtures and an unsigned live fee quote are not chain-payment evidence. The public app is a working Devnet demonstration, but these missing artifacts remain open in [SUBMISSION.md](docs/SUBMISSION.md).
 
 Creating a request does not require a wallet signature. Connecting a wallet to the workspace is a frontend access convenience; it is not cryptographic sign-in, does not request a sign-in message, and does not move funds. A payment happens only after the payer reviews and signs it in their wallet.
 
@@ -73,6 +79,6 @@ Devnet SOL has no economic value and Devnet can reset. Native transfers are irre
 
 The earlier BEFORE prototype is separate. Its application/wallet scaffolding was reused during this hackathon according to the user chronology; payment, reconciliation and Actions work belongs to this pivot. The UI follows the user's own Órbita CRM (fdz-crm, origin/master `3fdef60`) as a visual reference: Manrope, Geist Mono, graphite surfaces and sapphire accents. The public website explains the flow with a draggable, explicitly illustrative payment stack; the workspace defaults to dark and retains an optional saved light preference. No CRM source, assets or business data were copied. No organizer opening date is invented.
 
-Source: [GitHub](https://github.com/Miervolino06/solana-receivables). Production and live read-only Action smoke checks passed on 23/09/2026. FALTA: real-wallet payment evidence and demo video. Track these in [VERIFICATION.md](docs/VERIFICATION.md) and [SUBMISSION.md](docs/SUBMISSION.md).
+Source: [GitHub](https://github.com/Miervolino06/solana-receivables). Production and live read-only Action smoke checks passed on 23/09/2026. Still missing: real-wallet payment evidence and demo video. Track these in [VERIFICATION.md](docs/VERIFICATION.md) and [SUBMISSION.md](docs/SUBMISSION.md).
 
 Code retains its MIT license. The UI fonts, Manrope and Geist Mono, use OFL-1.1. React is MIT and Lucide is ISC. Retain upstream notices.

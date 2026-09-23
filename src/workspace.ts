@@ -1,4 +1,4 @@
-import { decodeRequest, encodeRequest, fetchPaymentReceipt, findPayment, formatSol, type PaymentReceipt } from './payments';
+import { decodeRequest, encodeRequest, fetchPaymentReceipt, findPayment, formatSol, type PaymentReceipt, type PaymentRequest } from './payments';
 import bs58 from 'bs58';
 
 // Keep existing links when upgrading the initial prototype. Stored signatures are
@@ -14,6 +14,14 @@ export type CheckState = {
   error?: string;
 };
 type StoragePort = Pick<Storage, 'getItem' | 'setItem'>;
+
+// The displayed receipt and export timestamp must come from one successful check.
+// Invalidation, failed lookup and a result for another request all remove proof.
+export function verifiedReceiptCheck(request: PaymentRequest, check?: CheckState): (CheckState & { receipt: PaymentReceipt }) | null {
+  if (!check || check.status !== 'paid' || !check.receipt || check.encoded !== encodeRequest(request) ||
+      encodeRequest(check.receipt.request) !== check.encoded) return null;
+  return { ...check, receipt: check.receipt };
+}
 
 export function readWorkspace(storage: StoragePort = localStorage): { items: WorkspaceEntry[]; error: string } {
   try {

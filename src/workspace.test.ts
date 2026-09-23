@@ -1,13 +1,23 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Keypair } from '@solana/web3.js';
 import { createRequest, encodeRequest, type PaymentReceipt } from './payments';
-import { readWorkspace, reconcileRequests, saveWorkspace, summarizeWorkspace, workspaceCsv, type WorkspaceEntry } from './workspace';
+import { readWorkspace, reconcileRequests, saveWorkspace, summarizeWorkspace, verifiedReceiptCheck, workspaceCsv, type WorkspaceEntry, type CheckState } from './workspace';
 
 const request = createRequest({ recipient: Keypair.generate().publicKey.toBase58(), label: '=IMPORTXML("bad")', amount: '0.000000001', description: 'A "quoted", description' });
 const entry: WorkspaceEntry = { encoded: encodeRequest(request) };
 const receipt: PaymentReceipt = { request, signature: '3'.repeat(88), payer: Keypair.generate().publicKey.toBase58(), recipient: request.recipient, amountLamports: 1n, feeLamports: 5000n, slot: 123, blockTime: 1700000000 };
 
 describe('local reconciliation workspace', () => {
+  it('removes receipt and successful check time when a recheck is cleared or fails', () => {
+    const paid: CheckState = { encoded: entry.encoded, status: 'paid', checkedAt: 1000, receipt };
+    expect(verifiedReceiptCheck(request, paid)).toMatchObject({ receipt, checkedAt: 1000 });
+    expect(verifiedReceiptCheck(request, undefined)).toBeNull();
+    for (const status of ['open', 'error', 'pending'] as const) {
+      expect(verifiedReceiptCheck(request, { ...paid, status, checkedAt: 2000 })).toBeNull();
+    }
+    expect(verifiedReceiptCheck({ ...request, description: 'Changed terms' }, paid)).toBeNull();
+    expect(verifiedReceiptCheck(request, { ...paid, receipt: { ...receipt, request: { ...request, description: 'Other request' } } })).toBeNull();
+  });
   it('treats storage signatures as hints and rejects corrupt records', () => {
     const storage = { getItem: () => JSON.stringify([{ ...entry, pendingSignature: receipt.signature }, entry, { encoded: 'bad' }]), setItem: vi.fn() };
     const loaded = readWorkspace(storage);

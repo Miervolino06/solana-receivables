@@ -1,18 +1,16 @@
-# Demo: one real payment, under three minutes
+# Three-minute demo script
 
-Prepare two distinct standard wallets on Devnet, a funded payer and a harmless public description. Use the actual app. Do not show secrets or substitute fixture receipts.
+**Recording status: pending.** No real-wallet end-to-end transfer, user-approved signature, paid receipt URL or demo video exists yet. Do not record the illustrative landing animation, an offline fixture, a fee quote, or a sample Devnet slot as if it were a payment. Make one small, real Devnet payment with two distinct wallets before recording.
 
-| Time | Action and narration |
+Use the deployed app, a funded payer wallet and a recipient wallet you control. Keep the actual receipt URL and transaction signature. Never show a seed phrase or private key.
+
+| Time | Show and say |
 | --- | --- |
-| 0:00–0:25 | Create a request with recipient, self-declared name, SOL amount and description. Explain that sharing a request requires no signature. |
-| 0:25–0:45 | Copy its link or use its QR; open the payer view. |
-| 0:45–1:15 | Show exact recipient, amount, live network fee and total. Explain public Memo data, irreversible payment, fee-on-failure and possible duplicates. Devnet SOL has no economic value. |
-| 1:15–1:45 | Open the actual wallet prompt, review and approve the transaction. |
-| 1:45–2:10 | Wait for verification, then show the paid receipt and “why it matches”: exact recipient, amount, request binding and signature. |
-| 2:10–2:35 | Return to the request workspace, run reconciliation and show the real payment included in verified totals. Export CSV. |
-| 2:35–2:50 | Open the public receipt without a wallet and its transaction on Devnet Explorer. Close: “Every paid request comes with evidence you can check.” |
+| 0:00–0:25 | Create a request for the recipient. “The link states exactly what is being requested; creating it does not sign or move funds.” |
+| 0:25–0:55 | Open the link as payer. Read the exact recipient, amount, estimated network fee and total aloud. Point out that request fields and the Memo are public, the transfer is irreversible, and failed transactions may still cost a fee. This is Devnet SOL with no monetary value. |
+| 0:55–1:25 | Choose the payer wallet, inspect the wallet’s transaction details and approve it. Show the wallet itself signing; do not imply the app signs for the payer. |
+| 1:25–1:55 | Wait for confirmed status. Open the receipt’s match sheet and show exact recipient, amount, request binding, signature and balance evidence. |
+| 1:55–2:25 | Open `/verify`, recheck the same real receipt, and download its JSON record. Change the request data while keeping the transaction signature and show that the altered request is rejected. |
+| 2:25–2:50 | Open the transaction in Solana Explorer on Devnet. Compare the signature and transfer independently. Close: “The receipt is useful because its request and transaction can be checked.” |
 
-Keep the signature, public receipt URL and final video URL. If status is uncertain, check that signature before retrying. Do not edit a failed transaction into a success. Record a fresh complete take after fixing the cause.
-
-The browser link is the primary demonstration. Show external Actions rendering only after testing that actual client; no automatic X unfurl or registry status is implied.
-
+Before submission, test that the public receipt link opens without a wallet and that the altered request fails. The displayed Devnet identity or sample slot is network context only; it must not stand in for a signature or receipt. Keep the actual receipt URL in project evidence and upload the final video URL only after the real recording exists.

@@ -39,6 +39,21 @@ The receipt shows evidence checked on the blockchain: a valid signature and a co
 
 This demonstrates a transfer on Devnet. It does not establish who is behind a wallet, that a service was delivered, that a fiscal invoice was issued, or that a commercial payment was made on Mainnet. The request creator supplies the displayed name, and the link and Memo details are public to anyone with access. Avoid including private information.
 
+## Recheck and challenge a receipt
+
+1. Copy the **actual receipt link** from a confirmed payment and open the public [Proof desk](https://solana-receivables.vercel.app/verify). Paste the link and run a fresh Devnet check. The page does not require wallet connection.
+2. Review the match sheet and open the linked transaction in Solana Explorer on Devnet. Explorer is a separate view of the transaction; it does not certify the payee's identity or delivery.
+3. Download the JSON evidence record and keep it with the actual receipt link. A displayed Devnet identity or sample slot identifies the network context; it is not evidence that your request was paid.
+4. To challenge the match, create a different request (for example, a different amount), then submit that request with the original transaction signature. It must fail because the signed Memo binds the transaction to the original request. Do not edit a receipt into a success.
+
+For an independent command-line recheck, from the project directory run this template with your own copied receipt link, keeping the URL in single quotes so `&` is passed literally:
+
+```sh
+npm run verify:receipt -- '<paste your actual receipt URL containing ?r=…&tx=…>'
+```
+
+The command is read-only: it queries Devnet and prints a JSON result; it does not connect a wallet, sign or submit a transaction. The example is a command template, not a verified receipt. No genuine receipt URL or wallet-approved signature exists for this project yet. RPC responses are the evidence source used by the verifier; an RPC provider can be unavailable or return incomplete history, and Devnet can reset. A later recheck can therefore be unavailable even when an earlier receipt was valid.
+
 ## Limits to know
 
 - Requests and signature hints are stored locally in the browser, up to 40 per workspace. Clearing browser data, changing devices or using another browser profile may remove this history. Keep the links and export the CSV; this is not a backup.
