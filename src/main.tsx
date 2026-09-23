@@ -5,6 +5,6 @@ import '@fontsource-variable/manrope';
 import '@fontsource-variable/geist-mono';
 import '@solana/wallet-adapter-react-ui/styles.css';
 import { Wallets } from './wallet';
-import App from './App';
+import Root from './Root';
 import './styles.css';
-createRoot(document.getElementById('root')!).render(<StrictMode><Wallets><App /></Wallets></StrictMode>);
+createRoot(document.getElementById('root')!).render(<StrictMode><Wallets><Root /></Wallets></StrictMode>);

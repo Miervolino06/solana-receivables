@@ -1,10 +1,23 @@
 # Receivables
 
-SOL payment links, a local request workspace, and receipts verified against the exact on-chain payment. Create a request without signing, share its link or QR, then reconcile requests against Solana Devnet and export the results.
+Request and check SOL payments with a link or QR code. The payer reviews the amount and estimated network fee, then approves the transfer in their own wallet. Receivables checks the resulting Solana transaction against the original request and keeps a shareable receipt.
 
-[Open Receivables](https://solana-receivables.vercel.app/) · [Submission notes](docs/SUBMISSION.md)
+**This published version is a Devnet demonstration.** Devnet SOL is for testing and has no economic value. Mainnet commercial payments are not available here.
 
-## Run
+[Open the public website](https://solana-receivables.vercel.app/) · [Open the payment workspace](https://solana-receivables.vercel.app/app) · [Leia o guia em português](docs/GUIA.md)
+
+## How it works
+
+1. A recipient creates a request for an amount of SOL and shares its link or QR.
+2. The payer opens it and reviews the recipient, amount and estimated Solana network fee in the app before opening their wallet to approve the transaction.
+3. The wallet signs a native SOL transfer with a read-only reference and a Memo containing the canonical request. The app checks the transaction on Devnet and creates a receipt only when the recipient, amount, reference and Memo match.
+4. The workspace can recheck requests, show received/open/unverified states and export available evidence to CSV.
+
+Creating a request does not require a wallet signature. Connecting a wallet to the workspace is a frontend access convenience; it is not cryptographic sign-in, does not request a sign-in message, and does not move funds. A payment happens only after the payer reviews and signs it in their wallet.
+
+The workspace saves up to 40 requests in the current browser. This is not a secure multi-user account, hosted ledger or cloud sync. Payment links and their request details are public to anyone who receives the link. A shared receipt can be checked without connecting a wallet.
+
+## Run locally
 
 Node.js 22 and npm:
 
@@ -38,6 +51,8 @@ No token mint addresses, custom deployed programs, custody, escrow, spending app
 
 Before signing, the app prepares the exact transfer, estimates its network fee, simulates it and checks the payer balance. Total cost is amount plus network fee. A receipt checks success, exact recipient/amount/reference/Memo, signature and balance changes. See [CHAIN.md](docs/CHAIN.md).
 
+The app displays the network fee estimate separately from the payment amount before opening the wallet for approval. The network fee is charged by Solana; Receivables charges no platform fee. The estimate comes from an RPC query and may differ from the final fee.
+
 ## Reconcile and export
 
 The browser stores up to 40 requests and signature hints. Reconciliation reads chain evidence serially; a stored signature never means paid by itself. Requested, verified received and checked-open totals use integer lamports. Unchecked, pending and RPC-error records remain unverified rather than being counted as received or open.
@@ -56,7 +71,7 @@ Devnet SOL has no economic value and Devnet can reset. Native transfers are irre
 
 ## Provenance and shipping status
 
-The earlier BEFORE prototype is separate. Its application/wallet scaffolding was reused during this hackathon according to the user chronology; payment, reconciliation and Actions work belongs to this pivot. The UI follows the user's own Órbita CRM (fdz-crm, origin/master `3fdef60`) as a visual reference: Manrope, Geist Mono, light surfaces and sapphire accents. No CRM source, assets or business data were copied. No organizer opening date is invented.
+The earlier BEFORE prototype is separate. Its application/wallet scaffolding was reused during this hackathon according to the user chronology; payment, reconciliation and Actions work belongs to this pivot. The UI follows the user's own Órbita CRM (fdz-crm, origin/master `3fdef60`) as a visual reference: Manrope, Geist Mono, graphite surfaces and sapphire accents. The public website explains the flow with a draggable, explicitly illustrative payment stack; the workspace defaults to dark and retains an optional saved light preference. No CRM source, assets or business data were copied. No organizer opening date is invented.
 
 Source: [GitHub](https://github.com/Miervolino06/solana-receivables). Production and live read-only Action smoke checks passed on 23/09/2026. FALTA: real-wallet payment evidence and demo video. Track these in [VERIFICATION.md](docs/VERIFICATION.md) and [SUBMISSION.md](docs/SUBMISSION.md).
 

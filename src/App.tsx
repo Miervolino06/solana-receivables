@@ -58,7 +58,8 @@ function MatchProof({ request, receipt }: { request: PaymentRequest; receipt: Pa
   </div>;
 }
 
-export default function App() {
+type AppProps = { publicAccess?: boolean; initialPage?: Page; onHome?: () => void; onWorkspace?: () => void; onVerify?: () => void };
+export default function App({ publicAccess = false, initialPage = 'requests', onHome, onWorkspace, onVerify }: AppProps) {
   const wallet = useWallet();
   const initial = useMemo(() => {
     const params = new URLSearchParams(location.search), encoded = params.get('r');
@@ -66,14 +67,14 @@ export default function App() {
     try { return { request: decodeRequest(encoded), signature: params.get('tx'), error: '' }; }
     catch (cause) { return { request: null, signature: null, error: message(cause) }; }
   }, []);
-  const [page, setPage] = useState<Page>(initial.error ? 'verify' : 'requests');
+  const [page, setPage] = useState<Page>(initial.error ? 'verify' : initialPage);
   const [panel, setPanel] = useState<Panel>(initial.request ? 'detail' : 'none');
   const [focusedLink, setFocusedLink] = useState(Boolean(initial.request));
   const previousFocus = useRef<HTMLElement | null>(null);
   const [sidebarClosed, setSidebarClosed] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    try { return localStorage.getItem('receivables-theme') === 'dark' ? 'dark' : 'light'; }
-    catch { return 'light'; }
+    try { return localStorage.getItem('receivables-theme') === 'light' ? 'light' : 'dark'; }
+    catch { return 'dark'; }
   });
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [request, setRequest] = useState<PaymentRequest | null>(initial.request);
@@ -196,6 +197,8 @@ export default function App() {
 
   function navigate(next: Page) {
     if (phase === 'signing' || phase === 'confirming') return;
+    if (publicAccess && next === 'verify' && onVerify) { onVerify(); return; }
+    if (publicAccess && next !== 'verify' && onWorkspace) { onWorkspace(); return; }
     ++op.current;
     setPage(next); setPanel('none'); setError(''); setNotice(''); setPrepared(null); setPhase('idle'); setQrOpen(false);
     setFocusedLink(false);
@@ -203,6 +206,7 @@ export default function App() {
   }
   function openCreate() {
     if (phase === 'signing' || phase === 'confirming') return;
+    if (publicAccess && onWorkspace) { onWorkspace(); return; }
     previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     ++op.current;
     setPage('requests'); setPanel('create'); setFocusedLink(false);
@@ -210,6 +214,8 @@ export default function App() {
     history.replaceState(null, '', location.pathname);
   }
   function closePanel() {
+    if (phase === 'signing' || phase === 'confirming') return;
+    if (publicAccess && onHome) { onHome(); return; }
     setPanel('none'); setFocusedLink(false);
     requestAnimationFrame(() => previousFocus.current?.focus());
   }
@@ -360,7 +366,7 @@ export default function App() {
   const title = page === 'requests' ? 'Requests' : page === 'activity' ? 'Activity' : 'Verify';
   return <div className={'app-layout ' + (sidebarClosed ? 'sidebar-collapsed' : '')} data-theme={theme} data-accent="sapphire">
     <aside className="sidebar">
-      <div className="sidebar-head"><button className="workspace-name" onClick={() => navigate('requests')} title="Receivables workspace">Receivables</button><button className="sidebar-toggle" onClick={() => setSidebarClosed(value => !value)} aria-label={sidebarClosed ? 'Expand sidebar' : 'Collapse sidebar'}>{sidebarClosed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</button></div>
+      <div className="sidebar-head"><button className="workspace-name" disabled={phase === 'signing' || phase === 'confirming'} onClick={onHome || (() => navigate('requests'))} title="About Receivables">Receivables</button><button className="sidebar-toggle" onClick={() => setSidebarClosed(value => !value)} aria-label={sidebarClosed ? 'Expand sidebar' : 'Collapse sidebar'}>{sidebarClosed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</button></div>
       <div className="nav-group"><span className="nav-group-label">Workspace</span><nav aria-label="Workspace"><button className={page === 'requests' ? 'current' : ''} onClick={() => navigate('requests')} disabled={phase === 'signing' || phase === 'confirming'} title="Requests"><FileCheck2 size={17} /><span>Requests</span><b>{saved.length}</b></button><button className={page === 'activity' ? 'current' : ''} onClick={() => navigate('activity')} disabled={phase === 'signing' || phase === 'confirming'} title="Activity"><Activity size={17} /><span>Activity</span>{activityRows.length > 0 && <b>{activityRows.length}</b>}</button><button className={page === 'verify' ? 'current' : ''} onClick={() => navigate('verify')} disabled={phase === 'signing' || phase === 'confirming'} title="Verify"><ShieldCheck size={17} /><span>Verify</span></button></nav></div>
       <div className="sidebar-bottom"><button className="appearance-toggle" onClick={toggleTheme} aria-label={theme === 'light' ? 'Switch to dark appearance' : 'Switch to light appearance'}>{theme === 'light' ? <Moon size={15} /> : <Sun size={15} />}<span>{theme === 'light' ? 'Dark appearance' : 'Light appearance'}</span></button><div className="sidebar-network"><i /> Solana Devnet</div><p>Local workspace · test SOL</p></div>
     </aside>

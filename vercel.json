@@ -2,6 +2,12 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "rewrites": [
+    { "source": "/app", "destination": "/index.html" },
+    { "source": "/app/", "destination": "/index.html" },
+    { "source": "/verify", "destination": "/index.html" },
+    { "source": "/verify/", "destination": "/index.html" }
+  ],
   "headers": [{ "source": "/actions.json", "headers": [
     { "key": "Access-Control-Allow-Origin", "value": "*" },
     { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS" }

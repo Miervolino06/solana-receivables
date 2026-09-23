@@ -2,6 +2,20 @@
 
 Snapshot: Receivables, 23/09/2026. No real payment is claimed yet.
 
+## Public introduction and wallet entry — 23/09/2026
+
+The public `/` now explains the product in Portuguese or English before wallet connection. `/app` opens the wallet entry screen until a wallet is connected; `/verify` and shared `?r=` request/receipt links remain public. This is a frontend entry flow, not account authentication. Dark graphite is the primary appearance, with the workspace honoring an explicitly saved light preference.
+
+- 29 tests across 4 files pass, including public-route and wallet-entry cases; production TypeScript/Vite build and server dependency import guard pass locally.
+- Browser inspection covered desktop 1440px, 934px and mobile 390px. The landing and connection gate have no horizontal page overflow at the inspected widths. On mobile, the wallet connection button is visible in the first 844px viewport.
+- The illustrative payment stack advances by real horizontal pointer drag, labeled step buttons and keyboard range control. PT/EN labels and example amount formatting change together. No illustration is presented as chain evidence.
+- Browser-emulated `prefers-reduced-motion: reduce` removes perspective and shows exactly one flat sheet with negligible transition duration. This is browser emulation, not a physical-device test.
+- Wallet selection opens the standard selector, focuses its labeled close button and returns focus on Escape. Landing/entry/back transitions focus the new heading. No wallet connection or signature was approved by the agent.
+- Public verification, invalid-link rejection and `/verify` refresh behavior were inspected. A separate source reviewer found the public Verify URL and route-focus defects; both were fixed, independently rechecked in source and confirmed in browser.
+- README and the Portuguese guide explain use, costs, local-browser storage and Devnet limitations. Existing payment programs, signature flow and Action endpoint are unchanged.
+
+These checks do not replace the real-wallet payment and video still listed below. Production deployment of this update is recorded after the live checks.
+
 ## Automated evidence
 
 - Production build and TypeScript check passed locally and in GitHub CI; latest code commit tested: `46403d3`.
