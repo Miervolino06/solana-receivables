@@ -14,7 +14,11 @@ The public `/` now explains the product in Portuguese or English before wallet c
 - Public verification, invalid-link rejection and `/verify` refresh behavior were inspected. A separate source reviewer found the public Verify URL and route-focus defects; both were fixed, independently rechecked in source and confirmed in browser.
 - README and the Portuguese guide explain use, costs, local-browser storage and Devnet limitations. Existing payment programs, signature flow and Action endpoint are unchanged.
 
-These checks do not replace the real-wallet payment and video still listed below. Production deployment of this update is recorded after the live checks.
+A separate substitute visual reviewer inspected 934×1000 and 390×844 screenshots in an isolated Chrome tab, plus mobile control dimensions; no material visual blocker was found. This review did not include real wallet approval.
+
+Production code commit `f46e798` is Vercel READY (`dpl_MUc1N4Thd98Y6z2uYRnGmMMBE9y7`), aliased to https://solana-receivables.vercel.app/. Both GitHub CI checks passed; [push run](https://github.com/Miervolino06/solana-receivables/actions/runs/35860320952). Anonymous `/`, `/app`, `/app/`, `/verify`, `/verify/` and invalid-link requests returned HTTP 200 with the new frontend; deployed JavaScript and CSS also returned 200. The production landing and wallet-entry route were confirmed in browser. Live Action smoke at 09:26 BRT returned OPTIONS 204, metadata 200, invalid-payer POST 400, icon 200 and discovery 200. The fee quote was 0.000005 SOL for the 0.001 SOL test request; no transaction was submitted.
+
+These checks do not replace the real-wallet payment and video still listed below. The older verification sections retain the history of the initial payment-workspace release.
 
 ## Automated evidence
 
