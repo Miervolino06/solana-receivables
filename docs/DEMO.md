@@ -1,8 +1,10 @@
 # Three-minute demo script
 
-**Recording status: pending.** No real-wallet end-to-end transfer, user-approved signature, paid receipt URL or demo video exists yet. Do not record the illustrative landing animation, an offline fixture, a fee quote, or a sample Devnet slot as if it were a payment. Make one small, real Devnet payment with two distinct wallets before recording.
+**Recording status: pending.** The first real wallet payment is confirmed and available at [the public receipt](https://solana-receivables.vercel.app/demo). The user did not record that signature. A new unpaid request is prepared at [the recording link](https://solana-receivables.vercel.app/record): 0.001 Devnet SOL to the same recipient. Start the phone's screen recording **before** opening Review payment, then let the user approve in Phantom. Do not represent a replayed receipt, illustration, offline fixture or fee quote as a newly signed payment.
 
 Use the deployed app, a funded payer wallet and a recipient wallet you control. Keep the actual receipt URL and transaction signature. Never show a seed phrase or private key.
+
+For a quick phone recording, use a single continuous take under three minutes: open the recording link inside Phantom, explain the purpose, show the full review and total, approve the transfer, wait for its receipt, and open Explorer. Narration can be short: “Receivables turns a payment link into proof you can check. This is Devnet test SOL. Before signing, I can see the recipient, amount, fee and risks. After confirmation, anyone can verify the exact request against the transaction.” If a wallet security screen is omitted by the recorder, film the phone with another device so the actual approval is visible. Upload the real recording to YouTube, Loom, Vimeo or X and use that URL in the submission.
 
 | Time | Show and say |
 | --- | --- |

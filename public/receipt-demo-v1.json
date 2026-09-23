@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "network": "devnet",
+  "checkedAt": "2026-09-23T17:11:52.765Z",
+  "signature": "KQvP2y2F1RhyzhaU4YNNdhGkpixAUr42KTgWniqnRpnDvbcjYCci6yM4sVJH3GXrbXT1iPpz4qMTzx5iVTJFxwC",
+  "request": {
+    "version": 1,
+    "recipient": "2Ga88akVcu85SpbRxCHQkdQyU1jbvve6cMaYWyW1YDh1",
+    "amountLamports": "1000000",
+    "label": "Receivables demo",
+    "description": "Devnet demonstration. Test SOL only; no goods or services sold.",
+    "reference": "6mDaHNqNLJTyySTJXyNsupCdWjirMCbFeAC3yLdjjQfQ",
+    "createdAt": "2026-09-23T15:25:15.392Z"
+  },
+  "actualRecipient": "2Ga88akVcu85SpbRxCHQkdQyU1jbvve6cMaYWyW1YDh1",
+  "amountLamports": "1000000",
+  "feeLamports": "5000",
+  "payer": "8PQiZb87dzMynLPM3K4Ph6bVNDoFTfyg34rMsEjAHCeb",
+  "slot": 503047831,
+  "blockTime": 1790183435,
+  "blockTimeIso": "2026-09-23T17:10:35.000Z",
+  "requestLink": "https://solana-receivables.vercel.app/?r=eyJ2ZXJzaW9uIjoxLCJyZWNpcGllbnQiOiIyR2E4OGFrVmN1ODVTcGJSeENIUWtkUXlVMWpidnZlNmNNYVlXeVcxWURoMSIsImFtb3VudExhbXBvcnRzIjoiMTAwMDAwMCIsImxhYmVsIjoiUmVjZWl2YWJsZXMgZGVtbyIsImRlc2NyaXB0aW9uIjoiRGV2bmV0IGRlbW9uc3RyYXRpb24uIFRlc3QgU09MIG9ubHk7IG5vIGdvb2RzIG9yIHNlcnZpY2VzIHNvbGQuIiwicmVmZXJlbmNlIjoiNm1EYUhOcU5MSlR5eVNUSlh5TnN1cENkV2ppck1DYkZlQUMzeUxkampRZlEiLCJjcmVhdGVkQXQiOiIyMDI2LTA5LTIzVDE1OjI1OjE1LjM5MloifQ",
+  "proofLink": "https://solana-receivables.vercel.app/?r=eyJ2ZXJzaW9uIjoxLCJyZWNpcGllbnQiOiIyR2E4OGFrVmN1ODVTcGJSeENIUWtkUXlVMWpidnZlNmNNYVlXeVcxWURoMSIsImFtb3VudExhbXBvcnRzIjoiMTAwMDAwMCIsImxhYmVsIjoiUmVjZWl2YWJsZXMgZGVtbyIsImRlc2NyaXB0aW9uIjoiRGV2bmV0IGRlbW9uc3RyYXRpb24uIFRlc3QgU09MIG9ubHk7IG5vIGdvb2RzIG9yIHNlcnZpY2VzIHNvbGQuIiwicmVmZXJlbmNlIjoiNm1EYUhOcU5MSlR5eVNUSlh5TnN1cENkV2ppck1DYkZlQUMzeUxkampRZlEiLCJjcmVhdGVkQXQiOiIyMDI2LTA5LTIzVDE1OjI1OjE1LjM5MloifQ&tx=KQvP2y2F1RhyzhaU4YNNdhGkpixAUr42KTgWniqnRpnDvbcjYCci6yM4sVJH3GXrbXT1iPpz4qMTzx5iVTJFxwC",
+  "explorerLink": "https://explorer.solana.com/tx/KQvP2y2F1RhyzhaU4YNNdhGkpixAUr42KTgWniqnRpnDvbcjYCci6yM4sVJH3GXrbXT1iPpz4qMTzx5iVTJFxwC?cluster=devnet",
+  "limitations": [
+    "This report records a payment verified from Solana Devnet RPC data at the stated check time. It is not a portable cryptographic certificate.",
+    "Requery Solana Devnet to confirm the transaction remains available and valid.",
+    "This report does not prove the payer or recipient's real-world identity, delivery of goods or services, or tax treatment."
+  ]
+}

@@ -2,13 +2,15 @@
 
 Product: **Receivables** · Network: **Solana Devnet** · Package: `solana-receivables`
 
-Deadline recorded from the [official event page](https://www.hackalaunch.com/h/proof-of-taste): **23/09/2026, 21:28 America/Sao_Paulo**, or 24/09/2026 00:28 UTC.
+Deadline shown on the [official event page](https://www.hackalaunch.com/h/proof-of-taste) at 23/09/2026 17:15 UTC: **24/09/2026, 21:28 America/Sao_Paulo**, or 25/09/2026 00:28 UTC. Recheck the live page before submission.
 
 - Repository: https://github.com/Miervolino06/solana-receivables
 - Public product: https://solana-receivables.vercel.app/
 - Public Proof desk: https://solana-receivables.vercel.app/verify
+- Verified Devnet demonstration receipt: https://solana-receivables.vercel.app/demo
+- Public evidence JSON: https://solana-receivables.vercel.app/receipt-demo-v1.json
 - Evidence instructions: [docs/PROOF.md](PROOF.md)
-- **Still pending:** a real-wallet Devnet payment, its signature and verified receipt URL, and a demo video no longer than three minutes.
+- **Still pending:** a demo video no longer than three minutes and the actual Hackalaunch submission.
 
 ## Short description
 
@@ -29,7 +31,7 @@ BEFORE application/wallet scaffolding was reused. The user chronology places thi
 - [x] Public repository includes setup instructions and a public-only environment example.
 - [x] Production frontend and Action endpoint were publicly reachable and smoke-checked; those checks submitted no payment.
 - [x] Automated offline fixtures cover transaction-match and tampering rules; fixtures are not chain proof.
-- [ ] Real transfer signed in a standard wallet, with its signature and public receipt independently checked.
+- [x] The user reports approving a Phantom payment; read-only Devnet verification matched the exact 0.001 SOL request, 0.000005 SOL fee and payer signature `KQvP2y2F1RhyzhaU4YNNdhGkpixAUr42KTgWniqnRpnDvbcjYCci6yM4sVJH3GXrbXT1iPpz4qMTzx5iVTJFxwC` in slot 503047831. The public report includes the receipt URL and Explorer link.
 - [ ] Demo video of at most three minutes shows request, cost review, wallet approval, confirmation, proof and independent Explorer check.
 - [ ] Team size, one-submission-per-person rule and actual submission confirmed.
 

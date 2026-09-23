@@ -9,7 +9,7 @@ Receivables treats a receipt as a claim that can be checked. The request says wh
 3. Inspect the match sheet: exact recipient and amount, request binding, confirmed status, signature and available balance evidence. Download the JSON record for retention.
 4. Follow the transaction link to [Solana Explorer on Devnet](https://explorer.solana.com/?cluster=devnet) and compare the signature and transfer. The explorer is an independent presentation of chain data; it does not certify identity or delivery.
 
-The public desk may show the live Devnet network identity and a sample slot to establish which network it is querying. These are network context, not a payment, receipt or example transaction. No verified payment link is published as a sample because no real-wallet payment has been completed for this project yet.
+The public desk may show the live Devnet network identity and a sample slot to establish which network it is querying. Those are network context, not payment evidence. The [verified demonstration receipt](https://solana-receivables.vercel.app/demo) is a separate, real Devnet test transfer; recheck it rather than treating the page's network observation as proof.
 
 ## Challenge the request binding
 
@@ -23,7 +23,7 @@ From the repository root, use the URL copied from an actual receipt. Keep the UR
 npm run verify:receipt -- '<paste the actual receipt URL containing ?r=…&tx=…>'
 ```
 
-The command performs a fresh read-only Devnet lookup and emits JSON when verification succeeds; invalid input or an RPC/verification failure exits with an error message. It has no signing key, does not connect a wallet and cannot submit a transfer. This is a command template; the text inside angle brackets is not a working link or a verified result. No actual signature/receipt URL exists yet for this project.
+The command performs a fresh read-only Devnet lookup and emits JSON when verification succeeds; invalid input or an RPC/verification failure exits with an error message. It has no signing key, does not connect a wallet and cannot submit a transfer. The text inside angle brackets is a template. For an actual check, use the `proofLink` in the [demonstration evidence record](../public/receipt-demo-v1.json) or copy the URL from the live receipt.
 
 ## What the check means
 
@@ -33,6 +33,6 @@ The verifier depends on RPC data. RPC providers can fail, rate-limit, omit old t
 
 ## Evidence currently available
 
-The public frontend and Action endpoint were smoke-checked, including an unsigned fee quote. Automated offline fixtures cover exact transaction matching and tampering. Those checks establish software behavior or deployment reachability; they are not chain-payment proof.
+The user reports approving a demonstration payment in Phantom. An independent read-only Devnet check at 23/09/2026 17:11:52 UTC verified signature `KQvP2y2F1RhyzhaU4YNNdhGkpixAUr42KTgWniqnRpnDvbcjYCci6yM4sVJH3GXrbXT1iPpz4qMTzx5iVTJFxwC` in slot 503047831. The exact request transferred 1,000,000 lamports (0.001 SOL) to `2Ga88akVcu85SpbRxCHQkdQyU1jbvve6cMaYWyW1YDh1`, with a 5,000-lamport network fee. [Inspect the transaction in Explorer](https://explorer.solana.com/tx/KQvP2y2F1RhyzhaU4YNNdhGkpixAUr42KTgWniqnRpnDvbcjYCci6yM4sVJH3GXrbXT1iPpz4qMTzx5iVTJFxwC?cluster=devnet) and use the report's `proofLink` to recheck the request binding.
 
-**Still missing:** one end-to-end transfer approved in a real standard wallet, its user-approved signature, a verified receipt URL and a video showing the flow. Until those exist, there is no real paid receipt to inspect or cite. Track this status in [SUBMISSION.md](SUBMISSION.md) and the dated [verification record](VERIFICATION.md).
+The [JSON report](../public/receipt-demo-v1.json) is a timestamped RPC verification record, not a portable certificate. Devnet can reset, and a later lookup can become unavailable. The payment does not prove the wallets' real-world owners or service delivery. **Still missing:** the demonstration video and confirmed Hackalaunch submission. Track these in [SUBMISSION.md](SUBMISSION.md) and the dated [verification record](VERIFICATION.md).

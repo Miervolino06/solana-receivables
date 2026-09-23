@@ -3,17 +3,65 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [
-    { "source": "/app", "destination": "/index.html" },
-    { "source": "/app/", "destination": "/index.html" },
-    { "source": "/verify", "destination": "/index.html" },
-    { "source": "/verify/", "destination": "/index.html" }
+    {
+      "source": "/app",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/app/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/verify",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/verify/",
+      "destination": "/index.html"
+    }
   ],
-  "headers": [{ "source": "/actions.json", "headers": [
-    { "key": "Access-Control-Allow-Origin", "value": "*" },
-    { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS" }
-  ] }, { "source": "/(.*)", "headers": [
-    { "key": "X-Content-Type-Options", "value": "nosniff" },
-    { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-    { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
-  ] }]
+  "headers": [
+    {
+      "source": "/actions.json",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET,OPTIONS"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/demo",
+      "destination": "https://solana-receivables.vercel.app/?r=eyJ2ZXJzaW9uIjoxLCJyZWNpcGllbnQiOiIyR2E4OGFrVmN1ODVTcGJSeENIUWtkUXlVMWpidnZlNmNNYVlXeVcxWURoMSIsImFtb3VudExhbXBvcnRzIjoiMTAwMDAwMCIsImxhYmVsIjoiUmVjZWl2YWJsZXMgZGVtbyIsImRlc2NyaXB0aW9uIjoiRGV2bmV0IGRlbW9uc3RyYXRpb24uIFRlc3QgU09MIG9ubHk7IG5vIGdvb2RzIG9yIHNlcnZpY2VzIHNvbGQuIiwicmVmZXJlbmNlIjoiNm1EYUhOcU5MSlR5eVNUSlh5TnN1cENkV2ppck1DYkZlQUMzeUxkampRZlEiLCJjcmVhdGVkQXQiOiIyMDI2LTA5LTIzVDE1OjI1OjE1LjM5MloifQ&tx=KQvP2y2F1RhyzhaU4YNNdhGkpixAUr42KTgWniqnRpnDvbcjYCci6yM4sVJH3GXrbXT1iPpz4qMTzx5iVTJFxwC",
+      "permanent": false
+    },
+    {
+      "source": "/record",
+      "destination": "https://solana-receivables.vercel.app/?r=eyJ2ZXJzaW9uIjoxLCJyZWNpcGllbnQiOiIyR2E4OGFrVmN1ODVTcGJSeENIUWtkUXlVMWpidnZlNmNNYVlXeVcxWURoMSIsImFtb3VudExhbXBvcnRzIjoiMTAwMDAwMCIsImxhYmVsIjoiUmVjZWl2YWJsZXMgcmVjb3JkaW5nIiwiZGVzY3JpcHRpb24iOiJSZWNvcmRlZCBEZXZuZXQgZGVtb25zdHJhdGlvbi4gVGVzdCBTT0wgb25seTsgbm8gZ29vZHMgb3Igc2VydmljZXMgc29sZC4iLCJyZWZlcmVuY2UiOiI5SERHWHJoRWJUTDFWY1Y1V1FUWk5YN1g0d0tGb1ZwWXlHSFRSR2I0QkVkRyIsImNyZWF0ZWRBdCI6IjIwMjYtMDktMjNUMTc6MTU6NTIuNDMyWiJ9",
+      "permanent": false
+    }
+  ]
 }

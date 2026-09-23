@@ -53,7 +53,7 @@ For an independent command-line recheck, from the project directory run this tem
 npm run verify:receipt -- '<paste your actual receipt URL containing ?r=…&tx=…>'
 ```
 
-The command is read-only: it queries Devnet and prints a JSON result; it does not connect a wallet, sign or submit a transaction. The example is a command template, not a verified receipt. No genuine receipt URL or wallet-approved signature exists for this project yet. RPC responses are the evidence source used by the verifier; an RPC provider can be unavailable or return incomplete history, and Devnet can reset. A later recheck can therefore be unavailable even when an earlier receipt was valid.
+The command is read-only: it queries Devnet and prints a JSON result; it does not connect a wallet, sign or submit a transaction. The placeholder is a command template. For a real example, open the [verified demonstration receipt](https://solana-receivables.vercel.app/demo) or use the `proofLink` in the [public evidence JSON](../public/receipt-demo-v1.json). RPC responses are the evidence source used by the verifier; a provider can be unavailable or return incomplete history, and Devnet can reset. A later recheck can therefore be unavailable even when an earlier receipt was valid.
 
 ## Paying from Phantom on a phone
 
@@ -72,6 +72,6 @@ If signing fails, the app shows the wallet's available error code and details ne
 
 ## For service providers
 
-If this flow becomes available for real payments, a payment link paired with verifiable evidence may make confirmation between provider and client easier. For now, use the published product only to explore the Devnet flow; do not send requests as commercial bills. A signed Devnet test and a demo video are still pending as project evidence.
+If this flow becomes available for real payments, a payment link paired with verifiable evidence may make confirmation between provider and client easier. For now, use the published product only to explore the Devnet flow; do not send requests as commercial bills. A 0.001 SOL demonstration payment has a verified Devnet receipt; the demo video and actual Hackalaunch submission remain pending.
 
 For configuration, on-chain programs, local setup, provenance and verification status, see the [technical README](../README.md), [verification limits](VERIFICATION.md) and [submission notes](SUBMISSION.md).

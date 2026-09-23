@@ -160,7 +160,7 @@ export default function Landing({ onEnter, connected }: LandingProps) {
 
         <section id="the-proof" className="lp-proof" aria-labelledby="lp-proof-title">
           <div className="lp-shell lp-proof-inner">
-            <div className="lp-proof-copy"><h2 id="lp-proof-title">“Paid” needs<br/><em>evidence.</em></h2><p>A client sends a screenshot. You still need to know: did the right amount reach the right wallet, for this request?</p><p>Receivables checks the transaction itself. Every condition has to match before a request earns its paid status.</p><a className="lp-button lp-button-primary" href="/verify">Open the proof desk<ArrowUpRight aria-hidden="true" /></a><small>Public and read-only. No wallet needed.</small></div>
+            <div className="lp-proof-copy"><h2 id="lp-proof-title">“Paid” needs<br/><em>evidence.</em></h2><p>A client sends a screenshot. You still need to know: did the right amount reach the right wallet, for this request?</p><p>Inspect a real 0.001 SOL Devnet payment approved in Phantom. The receipt rechecks its recipient, amount, signed request and balance changes against the chain.</p><a className="lp-button lp-button-primary" href="/demo">Recheck a real payment<ArrowUpRight aria-hidden="true" /></a><small>Confirmed on 23 September 2026. Test SOL only. No wallet needed to recheck.</small><a className="lp-button lp-button-text" href="/verify">Check your own receipt<ArrowUpRight aria-hidden="true" /></a></div>
             <div className="lp-proof-rules"><h3>What a receipt has to prove</h3><dl>
               <div><dt>Destination</dt><dd>The receiving wallet matches the request exactly.</dd></div>
               <div><dt>Amount</dt><dd>The recipient’s balance increased by the full requested amount.</dd></div>
