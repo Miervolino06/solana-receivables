@@ -26,6 +26,7 @@ To get test SOL, use the [official Solana faucet](https://faucet.solana.com/), i
 ## Fees in plain language
 
 - **Receivables fee:** This flow charges no platform fee.
+- **Priority fee:** Fixed at zero for this Devnet demo before wallet review. The Solana base network fee still applies.
 - **Solana network fee:** The network may charge a small transaction fee. The app queries an RPC service and shows the estimate separately from the requested amount, before opening the wallet for approval. The final fee may vary.
 - **Total leaving the wallet:** The requested amount plus the displayed network fee. Check the total in your wallet before approving.
 

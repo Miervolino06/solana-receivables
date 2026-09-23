@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Connection, Keypair, Transaction } from '@solana/web3.js';
+import { ComputeBudgetInstruction, ComputeBudgetProgram, Connection, Keypair, Transaction } from '@solana/web3.js';
 import { Buffer } from 'buffer';
 import { createRequest, encodeRequest } from '../src/payments';
 import { ACTION_HEADERS, createActionHandler, disclosure } from '../api/pay';
@@ -54,7 +54,7 @@ describe('Solana Action surface', () => {
     expect(text).toContain('not a token or guarantee of delivery');
   });
 
-  it('serves review metadata and an unsigned exact two-instruction payment', async () => {
+  it('serves an unsigned payment with its zero priority fee fixed before wallet review', async () => {
     const payer = Keypair.generate().publicKey;
     const request = createRequest({ recipient: Keypair.generate().publicKey.toBase58(), amount: '0.01', label: 'Studio', description: 'Work delivered' });
     const rpc = {
@@ -75,7 +75,11 @@ describe('Solana Action surface', () => {
     expect(post.state.status).toBe(200);
     const body = post.state.body as { transaction: string; message: string };
     const transaction = Transaction.from(Buffer.from(body.transaction, 'base64'));
-    expect(transaction.instructions).toHaveLength(2);
+    expect(transaction.instructions).toHaveLength(4);
+    const [limit, price] = transaction.instructions;
+    expect(limit.programId.equals(ComputeBudgetProgram.programId)).toBe(true);
+    expect(ComputeBudgetInstruction.decodeSetComputeUnitLimit(limit).units).toBe(400_000);
+    expect(ComputeBudgetInstruction.decodeSetComputeUnitPrice(price).microLamports).toBe(0n);
     expect(transaction.feePayer?.toBase58()).toBe(payer.toBase58());
     expect(transaction.signatures.every(signature => signature.signature === null)).toBe(true);
     expect(body.message).toContain(request.recipient);

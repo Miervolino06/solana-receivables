@@ -52,12 +52,15 @@ The Action uses server-side `SOLANA_RPC_URL` and `SITE_ORIGIN`. Configure the ac
 | --- | --- | --- |
 | System Program | `11111111111111111111111111111111` | Native SOL transfer |
 | Memo v3 | `MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr` | Payer-signed canonical request |
+| Compute Budget | `ComputeBudget111111111111111111111111111111` | Explicit compute limit and zero Devnet priority fee |
 
 No token mint addresses, custom deployed programs, custody, escrow, spending approvals or platform fees. Recipient and reference addresses vary by request. The reference is read-only and receives no SOL. Infrastructure: Solana RPC, Solana Explorer and Vercel Functions. Actions discovery is provided by `public/actions.json`.
 
 Before signing, the app prepares the exact transfer, estimates its network fee, simulates it and checks the payer balance. Total cost is amount plus network fee. A receipt checks success, exact recipient/amount/reference/Memo, signature and balance changes. See [CHAIN.md](docs/CHAIN.md).
 
 The app displays the network fee estimate separately from the payment amount before opening the wallet for approval. The network fee is charged by Solana; Receivables charges no platform fee. The estimate comes from an RPC query and may differ from the final fee.
+
+For this Devnet demo, transactions include a 400,000 compute-unit limit and a zero priority-fee price before simulation and fee review. This prevents Phantom's documented automatic priority-fee insertion from changing the message after review. The app still refuses any changed signed message. Existing two-instruction receipts remain verifiable; newly prepared transactions use the exact four-instruction format described in [CHAIN.md](docs/CHAIN.md).
 
 ## Reconcile and export
 

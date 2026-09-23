@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer/index.js';
 import bs58 from 'bs58';
 import {
-  Connection, Keypair, LAMPORTS_PER_SOL, Message, PublicKey, SystemProgram,
+  ComputeBudgetProgram, Connection, Keypair, LAMPORTS_PER_SOL, Message, PublicKey, SystemProgram,
   Transaction, TransactionInstruction, VersionedTransaction,
   type VersionedTransactionResponse,
 } from '@solana/web3.js';
@@ -28,6 +28,7 @@ const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfc
 const MAX_SOL = 100n * BigInt(LAMPORTS_PER_SOL);
 const MAX_ENCODED_LENGTH = 1024;
 const MAX_PREPARED_AGE_MS = 60_000;
+const PAYMENT_COMPUTE_UNIT_LIMIT = 400_000;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder('utf-8', { fatal: true });
 const fields = ['version', 'recipient', 'amountLamports', 'label', 'description', 'reference', 'createdAt'];
@@ -77,6 +78,20 @@ function walletErrorCode(cause: unknown): number | null {
 
 function equalBytes(a: Uint8Array, b: Uint8Array): boolean {
   return a.length === b.length && a.every((value, index) => value === b[index]);
+}
+function changedMessageField(expected: Transaction, actual: Transaction): string {
+  if (expected.feePayer?.toBase58() !== actual.feePayer?.toBase58()) return 'fee payer';
+  if (expected.recentBlockhash !== actual.recentBlockhash) return 'recent blockhash';
+  if (expected.instructions.length !== actual.instructions.length) return 'instruction count';
+  for (let index = 0; index < expected.instructions.length; index++) {
+    const original = expected.instructions[index], returned = actual.instructions[index];
+    if (!original.programId.equals(returned.programId)) return `instruction ${index + 1} program`;
+    if (original.keys.length !== returned.keys.length || original.keys.some((key, keyIndex) =>
+      !key.pubkey.equals(returned.keys[keyIndex].pubkey) || key.isSigner !== returned.keys[keyIndex].isSigner ||
+      key.isWritable !== returned.keys[keyIndex].isWritable)) return `instruction ${index + 1} accounts`;
+    if (!equalBytes(original.data, returned.data)) return `instruction ${index + 1} data`;
+  }
+  return 'compiled message';
 }
 function address(input: unknown, name: string, onCurve = false): PublicKey {
   if (typeof input !== 'string' || input.length < 32 || input.length > 44) throw new Error(`${name} must be a valid Solana address.`);
@@ -190,11 +205,18 @@ function paymentInstructions(request: PaymentRequest, payer: PublicKey): Transac
   const transfer = SystemProgram.transfer({ fromPubkey: payer, toPubkey: recipient,
     lamports: BigInt(request.amountLamports) });
   transfer.keys.push({ pubkey: reference, isSigner: false, isWritable: false });
-  return [transfer, new TransactionInstruction({ programId: MEMO_PROGRAM_ID,
+  const payment = [transfer, new TransactionInstruction({ programId: MEMO_PROGRAM_ID,
     keys: [{ pubkey: payer, isSigner: true, isWritable: false }],
     // web3 types its byte payload as Node Buffer; this is the identical byte
     // interface from the browser polyfill (new Node-only methods are unused).
     data: Buffer.from(encoder.encode(canonicalJson(request))) as unknown as TransactionInstruction['data'] })];
+  // Phantom otherwise adds priority fee instructions while signing, changing the reviewed message.
+  // A zero price preserves the quoted network fee and the fixed budget is covered by simulation.
+  return [
+    ComputeBudgetProgram.setComputeUnitLimit({ units: PAYMENT_COMPUTE_UNIT_LIMIT }),
+    ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 0 }),
+    ...payment,
+  ];
 }
 export function buildPaymentTransaction(request: PaymentRequest, payer: PublicKey, blockhash: string): Transaction {
   const valid = validateRequest(request);
@@ -254,11 +276,14 @@ export function verifyPaymentTransaction(signature: string, request: PaymentRequ
       (response.blockTime != null && (!Number.isSafeInteger(response.blockTime) || response.blockTime < 0)) ||
       !Number.isSafeInteger(meta.fee) || meta.fee < 0) throw new Error('Receipt metadata is invalid.');
   const message = response.transaction.message as Message;
-  if (!message || !Array.isArray(message.accountKeys) || message.instructions?.length !== 2 ||
+  if (!message || !Array.isArray(message.accountKeys) || ![2, 4].includes(message.instructions?.length) ||
       message.header?.numRequiredSignatures !== 1) throw new Error('Payment instruction structure is invalid.');
   const payer = message.accountKeys[0];
   if (!payer || !PublicKey.isOnCurve(payer.toBytes()) || payer.toBase58() === valid.recipient) throw new Error('Invalid payer or self-payment.');
-  const expected = buildPaymentTransaction(valid, payer, message.recentBlockhash).compileMessage();
+  // Two-instruction receipts created before explicit compute budget remain verifiable.
+  const expectedTransaction = buildPaymentTransaction(valid, payer, message.recentBlockhash);
+  if (message.instructions.length === 2) expectedTransaction.instructions.splice(0, 2);
+  const expected = expectedTransaction.compileMessage();
   const signatures = response.transaction.signatures;
   if (signatures.length !== 1 || signatures[0] !== signature ||
       !Transaction.populate(message, signatures).verifySignatures()) throw new Error('Payment signature is invalid.');
@@ -367,13 +392,14 @@ async function sendPreparedPayment(prepared: PreparedPayment, signTransaction: (
       prepared.balanceLamports < prepared.totalLamports) throw new Error('Prepared payment changed or was already submitted. Review and prepare again.');
   if (Date.now() - guard.preparedAt > MAX_PREPARED_AGE_MS) throw new Error('Payment review expired. Prepare again.');
   if (await rpc.getBlockHeight('confirmed') > guard.lastValidBlockHeight) throw new Error('Blockhash expired. Prepare again.');
-  const expected = buildPaymentTransaction(prepared.request, new PublicKey(guard.payer), guard.blockhash).serializeMessage();
+  const expectedTransaction = buildPaymentTransaction(prepared.request, new PublicKey(guard.payer), guard.blockhash);
+  const expected = expectedTransaction.serializeMessage();
   if (!equalBytes(expected, guard.message)) throw new Error('Prepared transaction changed. Prepare again.');
   if (await findPayment(prepared.request, rpc)) throw new Error('This request already has a verified payment. Check its receipt before paying again.');
   let signed: Transaction;
   try { signed = await signTransaction(prepared.transaction); }
   catch (error) { throw new WalletSigningError(error); }
-  if (!equalBytes(signed.serializeMessage(), guard.message)) throw new Error('Wallet changed the transaction. Request canceled.');
+  if (!equalBytes(signed.serializeMessage(), guard.message)) throw new Error(`Wallet changed the transaction (${changedMessageField(expectedTransaction, signed)}). Receivables did not broadcast a payment.`);
   if (!signed.verifySignatures()) throw new Error('Wallet signature is missing or invalid.');
   if (Date.now() - guard.preparedAt > MAX_PREPARED_AGE_MS) throw new Error('Payment review expired while the wallet was open. Prepare again.');
   if (await rpc.getBlockHeight('confirmed') > guard.lastValidBlockHeight) throw new Error('Blockhash expired while the wallet was open. Prepare again.');
@@ -383,7 +409,7 @@ async function sendPreparedPayment(prepared: PreparedPayment, signTransaction: (
   const payerSignature = signed.signatures.find(item => item.publicKey.toBase58() === guard.payer)?.signature;
   if (!payerSignature) throw new Error('Wallet signature is missing.');
   const knownSignature = bs58.encode(payerSignature);
-  if (!equalBytes(signed.serializeMessage(), guard.message)) throw new Error('Wallet changed the transaction. Request canceled.');
+  if (!equalBytes(signed.serializeMessage(), guard.message)) throw new Error(`Wallet changed the transaction (${changedMessageField(expectedTransaction, signed)}). Receivables did not broadcast a payment.`);
   const raw = signed.serialize();
   // Persist the exact signed transaction identity before any network submission.
   // A storage failure leaves this preparation retryable and releases the send lock.

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Keypair, Transaction, type Connection, type Message, type VersionedTransactionResponse } from '@solana/web3.js';
+import { ComputeBudgetProgram, Keypair, Transaction, type Connection, type Message, type VersionedTransactionResponse } from '@solana/web3.js';
+import bs58 from 'bs58';
 import {
   buildPaymentTransaction, createRequest, decodeRequest, encodeRequest, findPayment,
   formatSol, parseSol, preparePayment, sendPayment, verifyPaymentTransaction,
@@ -14,10 +15,11 @@ function request(): PaymentRequest {
   return createRequest({ recipient: Keypair.generate().publicKey.toBase58(), amount: '1.25',
     label: 'Studio', description: 'Prototype delivery' });
 }
-function fixture() {
+function fixture(legacy = false) {
   const payer = Keypair.generate();
   const req = request();
   const tx = buildPaymentTransaction(req, payer.publicKey, Keypair.generate().publicKey.toBase58());
+  if (legacy) tx.instructions.splice(0, 2);
   tx.sign(payer);
   const message = tx.compileMessage();
   const actualSignature = tx.signatures[0].signature!;
@@ -77,6 +79,23 @@ describe('request encoding and money', () => {
 });
 
 describe('Devnet payment proof', () => {
+  it('predefines compute budget before review so Phantom does not change the signed message', async () => {
+    const { payer, req, tx, signature, response } = fixture();
+    const rpc = rpcMock(response);
+    vi.mocked(rpc.getLatestBlockhash).mockResolvedValue({ blockhash: tx.recentBlockhash!, lastValidBlockHeight: 100 });
+    vi.mocked(rpc.sendRawTransaction).mockResolvedValue(signature);
+    const prepared = await preparePayment(req, payer.publicKey, rpc);
+    const signed = async (unsigned: Transaction) => {
+      if (!unsigned.instructions.some(item => item.programId.equals(ComputeBudgetProgram.programId))) {
+        unsigned.instructions.unshift(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
+        unsigned.instructions.unshift(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 0 }));
+      }
+      unsigned.sign(payer);
+      return unsigned;
+    };
+    await expect(sendPayment(prepared, signed, rpc)).resolves.toMatchObject({ signature });
+    expect(prepared.transaction.instructions.filter(item => item.programId.equals(ComputeBudgetProgram.programId))).toHaveLength(2);
+  });
   it('passes Devnet and the connected payer to a Wallet Standard sign-only feature', async () => {
     const { payer, req } = fixture();
     const tx = buildPaymentTransaction(req, payer.publicKey, Keypair.generate().publicKey.toBase58());
@@ -122,12 +141,35 @@ describe('Devnet payment proof', () => {
     await expect(signWalletTransaction(tx, payer.publicKey, adapter, fallback)).rejects.toThrow('Wallet refused');
     expect(fallback).not.toHaveBeenCalled();
   });
-  it('verifies a signed two-instruction transfer, memo and exact balance changes', () => {
+  it('verifies a signed four-instruction transfer, memo and exact balance changes', () => {
     const { req, signature, response } = fixture();
     expect(verifyPaymentTransaction(signature, req, response)).toMatchObject({
       recipient: req.recipient, amountLamports: 1_250_000_000n, feeLamports: 5_000n, slot: 42,
     });
+    expect((response.transaction.message as Message).instructions).toHaveLength(4);
+  });
+  it('keeps exact two-instruction receipts created before the compute budget change valid', () => {
+    const { req, signature, response } = fixture(true);
     expect((response.transaction.message as Message).instructions).toHaveLength(2);
+    expect(verifyPaymentTransaction(signature, req, response)).toMatchObject({
+      recipient: req.recipient, amountLamports: 1_250_000_000n, feeLamports: 5_000n,
+    });
+  });
+  it.each([
+    { name: 'compute limit', change: (tx: Transaction) => { tx.instructions[0] = ComputeBudgetProgram.setComputeUnitLimit({ units: 399_999 }); } },
+    { name: 'compute price', change: (tx: Transaction) => { tx.instructions[1] = ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1 }); } },
+    { name: 'compute order', change: (tx: Transaction) => { [tx.instructions[0], tx.instructions[1]] = [tx.instructions[1], tx.instructions[0]]; } },
+    { name: 'extra account', change: (tx: Transaction) => { tx.instructions[0].keys.push({ pubkey: Keypair.generate().publicKey, isSigner: false, isWritable: false }); } },
+  ])('rejects a signed payment with altered $name', ({ change }) => {
+    const { payer, req, tx, response } = fixture();
+    const altered = buildPaymentTransaction(req, payer.publicKey, tx.recentBlockhash!);
+    change(altered);
+    altered.sign(payer);
+    const signature = bs58.encode(altered.signatures[0].signature!);
+    const alteredResponse = { ...response, transaction: {
+      message: altered.compileMessage(), signatures: [signature],
+    } } as VersionedTransactionResponse;
+    expect(() => verifyPaymentTransaction(signature, req, alteredResponse)).toThrow(/do not match/i);
   });
   it.each([
     { version: '1.0.0', supportedTransactionVersions: [0] },
@@ -191,6 +233,7 @@ describe('Devnet payment proof', () => {
       tx.sign(payer);
       return tx;
     }, rpc)).rejects.toThrow(/changed/i);
+    expect(rpc.sendRawTransaction).not.toHaveBeenCalled();
   });
   it('sends one signed transaction and reconstructs its receipt from chain data', async () => {
     const { payer, req, tx, signature, response } = fixture();

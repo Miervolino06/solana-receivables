@@ -8,12 +8,16 @@ Recipient must be an on-curve wallet address. References are random public keys;
 
 ## Instructions
 
-Exactly two legacy transaction instructions:
+New payments use exactly four legacy transaction instructions:
 
-1. System Program transfers the requested native SOL from payer to recipient. The reference is appended as a read-only nonsigner account.
-2. Memo v3 contains canonical request JSON, with payer as signer.
+1. Compute Budget sets the compute-unit limit to 400,000.
+2. Compute Budget sets the compute-unit price to zero micro-lamports (no priority fee on this Devnet demo).
+3. System Program transfers the requested native SOL from payer to recipient. The reference is appended as a read-only nonsigner account.
+4. Memo v3 contains canonical request JSON, with payer as signer.
 
-System Program: `11111111111111111111111111111111`. Memo v3: `MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr`. No mint addresses or token program calls exist.
+System Program: `11111111111111111111111111111111`. Memo v3: `MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr`. Compute Budget: `ComputeBudget111111111111111111111111111111`. No mint addresses or token program calls exist.
+
+Phantom [documents adding priority-fee instructions at signing](https://docs.phantom.com/developer-powertools/solana-priority-fees) when an unsigned transaction has no existing compute-budget instructions and has room for them. Preparing both instructions up front avoids that automatic rewrite while keeping the reviewed message immutable. No wallet-returned fee or instruction change is silently accepted.
 
 ## Preparation and signing
 
@@ -24,6 +28,8 @@ An in-memory guard binds the displayed request/cost to the prepared message. Rev
 ## Receipt verification
 
 A confirmed RPC response must prove a successful legacy transaction with exactly the expected message, one valid payer signature and the exact request. Recipient balance must increase by the amount, payer balance must decrease by amount plus fee, and other balances must not change. A transaction merely mentioning the reference does not prove payment.
+
+For backward compatibility, the verifier also accepts the exact historical two-instruction transfer-and-Memo format. It does not ignore arbitrary Compute Budget instructions: the new format must match the fixed limit, zero price, order, accounts and full message, just as the historical format must match its full message.
 
 Reference lookup examines at most 50 recent signatures. Missing transaction data remains uncertain. A full search window without a valid payment fails closed instead of asserting that no payment exists. Direct receipt lookup binds the signature to the supplied request.
 

@@ -2,6 +2,16 @@
 
 Snapshot: Receivables, 23/09/2026. No real payment is claimed yet.
 
+## Phantom priority-fee compatibility — 23/09/2026
+
+The phone retest reached the app's `Wallet changed the transaction` guard after wallet approval. Phantom [documents automatically inserting priority-fee instructions](https://docs.phantom.com/developer-powertools/solana-priority-fees) at signing when an unsigned transaction lacks them, including on mobile. The old builder met those conditions. This reproduces a supported cause of the mismatch; the actual phone's returned bytes were not captured, so it is not a forensic identification of that attempt.
+
+New payments prepare a 400,000 compute-unit limit and zero compute-unit price before the fee quote, simulation and user review. The immutable-message check remains intact. The verifier accepts only the exact new four-instruction message or the exact historical two-instruction message; it does not ignore wallet-added instructions or fees.
+
+Read-only live Devnet validation at 17:00:34 UTC returned four instructions, a zero priority price, a 5,000-lamport network fee and a 1,005,000-lamport total for the user's 1,000,000-lamport demonstration request. Simulation passed at 122,323 compute units. A request with the maximum allowed label and description byte lengths also simulated successfully at 151,100 units; its unsigned transaction was 722 bytes. These are unsigned construction and simulation checks, not payment evidence. Physical Phantom approval, network confirmation and the actual receipt still require the user's retest.
+
+Validation: 51 tests in six files, TypeScript/Vite build and server dependency import guard passed. A regression test first reproduced the mismatch by emulating Phantom's documented insertion policy, then passed with the budget specified before review. A serialization/signing roundtrip using only an ephemeral local test key preserved the old message exactly. Correctly re-signed alterations to compute limit, price, order and accounts are rejected, and historical receipts remain accepted. Independent source review found no actionable issue. Remaining mismatch errors now identify a safe field category without exporting signed bytes or weakening the guard.
+
 ## Mobile payment investigation — 23/09/2026
 
 A user reported that Phantom on a phone showed a declined-payment message after approval, and that the review was almost unreadable. Two defects were reproduced locally: the app replaced any error containing `reject`, `declin` or `cancel` with a claim that the user declined; and the review's flex layout held its background to the viewport height while warnings, acknowledgement and the signing action overflowed below it. The close icon also inherited black on graphite.
